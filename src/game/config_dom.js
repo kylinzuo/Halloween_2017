@@ -1,12 +1,62 @@
 import { getRandom } from '@/util'
+// 元素类型字典
+export const typeDict = {
+  pumpkin0g: {
+    type: 'pumpkin',
+    en: 'pumpkin0g',
+    cn: '0g南瓜',
+    weight: 0
+  },
+  pumpkin1g: {
+    type: 'pumpkin',
+    en: 'pumpkin1g',
+    cn: '1g南瓜',
+    weight: 1
+  },
+  pumpkin3g: {
+    type: 'pumpkin',
+    en: 'pumpkin3g',
+    cn: '3g南瓜',
+    weight: 3
+  },
+  pumpkin5g: {
+    type: 'pumpkin',
+    en: 'pumpkin5g',
+    cn: '5g南瓜',
+    weight: 5
+  },
+  pumpkin10g: {
+    type: 'pumpkin',
+    en: 'pumpkin10g',
+    cn: '10g南瓜',
+    weight: 10
+  },
+  witch: {
+    type: 'troublemaker',
+    en: 'witch',
+    cn: '女巫'
+  },
+  bat: {
+    type: 'troublemaker',
+    en: 'bat',
+    cn: '蝙蝠'
+  },
+  ghost: {
+    type: 'troublemaker',
+    en: 'ghost',
+    cn: '幽灵'
+  }
+}
 export const config = {
   speed: 5,
   difficulty: 0,
   duration: 60000,
   gapTime: 800,
   pumpkin: 'pumpkin',
+  pumpkins: [typeDict['pumpkin0g'], typeDict['pumpkin1g'], typeDict['pumpkin3g'], typeDict['pumpkin5g'], typeDict['pumpkin10g']],
   troublemaker: 'troublemaker',
-  top: 100,
+  troublemakers: [typeDict['witch'], typeDict['bat'], typeDict['ghost']],
+  top: 0, // 100
   bottom: 150,
   progressBarL: 200
 }

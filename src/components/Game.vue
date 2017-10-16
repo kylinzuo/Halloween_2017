@@ -3,17 +3,20 @@
     <div
       v-for="(pumpkin, index) in pumpkins"
       :key="index"
+      v-if="pumpkin.status"
       class="round"
-      :class="[imgDict[pumpkin.type]]"
+      :class="[pumpkin.category.en]"
       :style="{
         left: pumpkin.left + 'px',
         top: pumpkin.top + 'px'
       }"
       @click="gainPumpkin(pumpkin, index)"
     >
-      {{pumpkin.weight ? '+' + pumpkin.weight : ''}}
+      <span :style="{opacity: pumpkin.show ? 1 : 0}">
+        {{pumpkin.weight ? '+' + pumpkin.weight : ''}}
+      </span>
     </div>
-    <div class="start-btn" @click="gameStart()">开始</div>
+    <div class="start-btn" @touchstart="gameStart()">开始</div>
     <div class="countdown">倒计时：{{countdown}}</div>
     <div class="progress-bar-wrapper">
       <div
@@ -31,12 +34,14 @@ import { getRandom } from '@/util'
 import { config, troublemaker, weightRules } from '@/game/config_dom.js'
 export default {
   name: 'game',
+  props: {
+    lists: {
+      type: Array,
+      required: true
+    }
+  },
   data () {
     return {
-      imgDict: {
-        pumpkin: 'pumpkin',
-        troublemaker: 'troublemaker'
-      },
       width: 0,
       height: 0,
       timer: null,
@@ -47,7 +52,9 @@ export default {
       produceTroubleTimes: [],
       produceTroubleTime: 0,
       tatal: 0,
-      weight: 0
+      weight: 0,
+      counts: [0, 0, 0, 0, 0],
+      endStatus: {} // status 0-游戏时间到，正常结束   1-碰到捣蛋元素提前结束
     }
   },
   computed: {
@@ -70,16 +77,26 @@ export default {
     this.width = wrapper.offsetWidth
     this.height = wrapper.offsetHeight
     // this.start()
+    console.log('config', config)
   },
   methods: {
     gameStart () {
       this.start()
+    },
+    gameOver () {
+      this.$emit('gameOver', {
+        weight: this.weight,
+        counts: [...this.counts],
+        endStatus: {...this.endStatus}
+      })
     },
     start () {
       // 初始化游戏状态
       this.status = true
       this.duration = config.duration
       this.weight = 0
+      this.counts = [0, 0, 0, 0, 0]
+      this.endStatus = {}
       this.pumpkins = []
       this.produceTroubleTimes = troublemaker()
       console.log(this.produceTroubleTimes)
@@ -110,7 +127,8 @@ export default {
           let newTrobles = []
           for (let i = 0; i < this.produceTroubleTime.num; i++) {
             newTrobles = [...newTrobles, {
-              type: config.troublemaker,
+              status: true,
+              category: config.troublemakers[getRandom(0, 2)],
               left: this.width + getRandom(0, 200),
               top: getRandom(config.top, this.height - config.bottom),
               speed: getRandom(config.speed - 3 + config.difficulty, config.speed - 2 + config.difficulty),
@@ -145,12 +163,14 @@ export default {
           // console.log('this.tatal', this.tatal)
           let newPumpkins = []
           for (let i = 0; i < newPumpkinWeight.length; i++) {
+            let weight = newPumpkinWeight[i]
             newPumpkins = [...newPumpkins, {
-              type: config.pumpkin,
+              status: true,
+              category: config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)],
               left: getRandom(0, (this.width - 100)),
-              top: getRandom(-100, -50),
+              top: getRandom(config.top - 100, config.top - 50),
               speed: getRandom(config.speed - 1 + config.difficulty, config.speed + config.difficulty),
-              weight: newPumpkinWeight[i]
+              weight: weight
             }]
           }
           this.pumpkins.push(...newPumpkins)
@@ -163,38 +183,62 @@ export default {
           console.log('%c 最后剩余的南瓜重量', 'color: red', pumpkinWeights)
           this.status = false
           clearInterval(this.timer)
+          // 游戏结束将结果反馈回父组件
+          this.endStatus = {
+            status: 0
+          }
+          this.gameOver()
         }
       }, intervaTime)
     },
     game () {
-      this.pumpkins.forEach((d, index) => {
-        if (d.type === config.pumpkin) {
-          d.top += d.speed
-          if (d.top > (this.height - config.bottom)) {
-            this.pumpkins.splice(index, 1)
+      let index = this.pumpkins.length
+      while (index > 0 && index--) {
+        if (this.pumpkins[index].category.type === config.pumpkin) {
+          this.pumpkins[index].top += this.pumpkins[index].speed
+          if (this.pumpkins[index].top > (this.height - config.bottom)) {
+            // this.pumpkins.splice(index, 1)
+            this.pumpkins[index].status = false
           }
-        } else if (d.type === config.troublemaker) {
-          d.left -= d.speed
-          let top = d.top + (d.direction === 'up' ? -getRandom(0, 2) : getRandom(0, 2))
-          d.top = top < config.top
-            ? config.top
-            : top > this.height - config.bottom
-              ? this.height - config.bottom
-              : top
-          if (d.left < -50) {
-            this.pumpkins.splice(index, 1)
+        } else if (this.pumpkins[index].category.type === config.troublemaker) {
+          this.pumpkins[index].left -= this.pumpkins[index].speed
+          let top = this.pumpkins[index].top + (this.pumpkins[index].direction === 'up' ? -getRandom(0, 2) : getRandom(0, 2))
+          if (top < config.top) {
+            this.pumpkins[index].direction = 'down'
+          } else if (top > (this.height - config.bottom)) {
+            this.pumpkins[index].direction = 'up'
+          }
+          this.pumpkins[index].top = top
+          if (this.pumpkins[index].left < -50) {
+            // this.pumpkins.splice(index, 1)
+            this.pumpkins[index].status = false
           }
         }
-      })
+      }
     },
     gainPumpkin (p, index) {
       console.log(p, index)
-      if (p.type === config.pumpkin && this.status) {
+      if (!this.status) return
+      if (p.category.type === config.pumpkin) {
         this.weight += p.weight
-        this.pumpkins.splice(index, 1)
+        this.pumpkins[index].show = true
+        setTimeout(_ => {
+          this.pumpkins.splice(index, 1)
+        }, 50)
+        // 添加用户点击统计数据
+        this.counts[[0, 1, 3, 5, 10].indexOf(p.weight)] += 1
       } else {
         this.status = false
         clearInterval(this.timer)
+        // 点击到了捣蛋鬼，游戏结束将结果反馈回父组件
+        this.endStatus = {
+          status: 1,
+          type: p.category.cn
+        }
+        this.gameOver()
+        this.pumpkins = this.pumpkins.filter(d => {
+          return d.category.type !== config.pumpkin
+        })
       }
     }
   }
@@ -202,7 +246,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="less" scoped>
 .game {
   position: relative;
   background-image: url(../assets/bg.jpeg);
@@ -254,17 +298,40 @@ export default {
   font-weight: 600;
   text-align: center;
   line-height: 50px;
-}
-.pumpkin {
-  background-image: url(../assets/pumpkin1.png);
   z-index: 10;
 }
-.troublemaker {
+.pumpkin0g {
+  background-image: url(../assets/pumpkin1.png);
+}
+.pumpkin1g {
+  background-image: url(../assets/pumpkin1.png);
+}
+.pumpkin3g {
+  background-image: url(../assets/logo.png);
+}
+.pumpkin5g {
+  background-image: url(../assets/pumpkin1.png);
+}
+.pumpkin10g {
+  background-image: url(../assets/pumpkin1.png);
+}
+.troublemaker() {
   background-color: rgba(255, 255, 255, 0.5);
-  background-image: url(../assets/witch_left.png);
   width: 75px;
   height: 75px;
   z-index: 20;
+}
+.witch {
+  .troublemaker;
+  background-image: url(../assets/witch_left.png);
+}
+.bat {
+  .troublemaker;
+  background-image: url(../assets/witch_right.png);
+}
+.ghost {
+  .troublemaker;
+  background-image: url(../assets/witch_left.png);
 }
 .progress-bar-wrapper {
   position: absolute;

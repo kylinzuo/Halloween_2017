@@ -1,6 +1,6 @@
 <template>
   <div class="demo">
-    <Game></Game>
+    <Game ref='game' :lists="lists" @gameOver="gameOver"></Game>
   </div>
 </template>
 
@@ -10,14 +10,20 @@ export default {
   name: 'demo',
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      msg: 'Welcome to Your Vue.js App',
+      lists: []
     }
   },
   mounted () {
-    //
+    // this.$refs.game.gameStart()
   },
   components: {
     Game
+  },
+  methods: {
+    gameOver (data) {
+      console.log('游戏结束', data)
+    }
   }
 }
 </script>
