@@ -11,7 +11,7 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
-      lists: []
+      lists: [55, 15, 12, 4]
     }
   },
   mounted () {

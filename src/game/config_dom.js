@@ -48,10 +48,11 @@ export const typeDict = {
   }
 }
 export const config = {
-  speed: 5,
-  difficulty: 0,
+  distance: 200,
+  speed: [3, 4, 5, 6],
+  difficulty: 1,
   duration: 60000,
-  gapTime: 800,
+  gapTime: [1200, 1000, 800, 600],
   pumpkin: 'pumpkin',
   pumpkins: [typeDict['pumpkin0g'], typeDict['pumpkin1g'], typeDict['pumpkin3g'], typeDict['pumpkin5g'], typeDict['pumpkin10g']],
   troublemaker: 'troublemaker',
@@ -100,7 +101,7 @@ export const weightRules = [
   [85, 15, 6, 4],
   [74, 12, 10, 4],
   [85, 20, 5, 3],
-  [65, 20, 5, 3],
+  [65, 20, 5, 5],
   [65, 30, 7, 1],
   [50, 15, 15, 3]
 ]

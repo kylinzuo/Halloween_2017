@@ -8,7 +8,8 @@
       :class="[pumpkin.category.en]"
       :style="{
         left: pumpkin.left + 'px',
-        top: pumpkin.top + 'px'
+        top: pumpkin.top + 'px',
+        transform: 'rotate(' + pumpkin.rotate + 'deg)'
       }"
       @click="gainPumpkin(pumpkin, index)"
     >
@@ -42,13 +43,15 @@ export default {
   },
   data () {
     return {
+      isFirst: true,
       width: 0,
       height: 0,
       timer: null,
       status: false,
       duration: config.duration,
-      gapT: config.gapTime,
+      gapT: 0,
       pumpkins: [],
+      pumpkinWeights: [],
       produceTroubleTimes: [],
       produceTroubleTime: 0,
       tatal: 0,
@@ -76,51 +79,48 @@ export default {
     let wrapper = this.$refs.game
     this.width = wrapper.offsetWidth
     this.height = wrapper.offsetHeight
-    // this.start()
+    // 初始界面需要有两个南瓜
+    this.pumpkinWeights = this.initWeight()
+    this.pumpkins = this.addNewPumpkins(this.pumpkinWeights.splice(0, getRandom(2, 3)), 4, true)
     console.log('config', config)
   },
   methods: {
-    gameStart () {
-      this.start()
-    },
     gameOver () {
+      this.duration = 0
       this.$emit('gameOver', {
         weight: this.weight,
         counts: [...this.counts],
         endStatus: {...this.endStatus}
       })
     },
-    start () {
+    /**
+     * 启动游戏
+     * @param {level} value 游戏难度 0-简单 1-中等 2-困难 3-最难 默认中等难度
+     */
+    gameStart (level) {
+      // let difficulty = level !== undefined ? level : config.difficulty
+      // todo => test
+      let difficulty = getRandom(0, 3)
+      let speed = config.speed[difficulty]
+      let gapTime = config.gapTime[difficulty]
+      console.log('====', speed, gapTime)
       // 初始化游戏状态
       this.status = true
       this.duration = config.duration
+      this.gapT = gapTime
       this.weight = 0
       this.counts = [0, 0, 0, 0, 0]
       this.endStatus = {}
-      this.pumpkins = []
-      this.produceTroubleTimes = troublemaker()
-      console.log(this.produceTroubleTimes)
+      this.pumpkins = this.isFirst ? this.pumpkins : []
+      this.produceTroubleTimes = troublemaker(difficulty - 1)
       this.produceTroubleTime = this.produceTroubleTimes.shift()
       // 最大掉落南瓜次数
-      let maxVal = Math.floor((config.duration / 1000 - 1) / (config.gapTime / 1000))
+      let maxVal = Math.floor((config.duration / 1000 - 2) / (gapTime / 1000))
       clearInterval(this.timer)
-      let intervaTime = 20 // 4 * config.speed
+      let intervaTime = 20
       // 初始化南瓜重量
-      const rules = [1, 3, 5, 10]
-      let pumpkinNum = weightRules[getRandom(0, (weightRules.length - 1))]
-      let pumpkinWeights = []
-      pumpkinNum.forEach((d, i) => {
-        if (d > 0) {
-          for (let j = 0; j < d; j++) {
-            pumpkinWeights = [...pumpkinWeights, rules[i]]
-          }
-        }
-      })
-      pumpkinWeights.sort(_ => {
-        return 0.5 - Math.random()
-      })
-      console.log('pumpkinNum', pumpkinNum)
-      console.log('pumpkinWeights', pumpkinWeights)
+      let pumpkinWeights = this.isFirst ? [...this.pumpkinWeights] : this.initWeight()
+      this.isFirst = false
       this.timer = setInterval(() => {
         // 是否添加捣蛋鬼
         if (config.duration - this.duration === this.produceTroubleTime.time) {
@@ -131,7 +131,8 @@ export default {
               category: config.troublemakers[getRandom(0, 2)],
               left: this.width + getRandom(0, 200),
               top: getRandom(config.top, this.height - config.bottom),
-              speed: getRandom(config.speed - 3 + config.difficulty, config.speed - 2 + config.difficulty),
+              rotate: 0,
+              speed: getRandom(1, 3),
               direction: getRandom(0, 1) === 0 ? 'up' : 'down'
             }]
           }
@@ -147,7 +148,10 @@ export default {
         if (this.gapT <= 0 && this.duration > 1000) {
           let loc = 0
           let dropNum = 0
-          if (maxVal < pumpkinWeights.length) {
+          if (maxVal < Math.ceil(pumpkinWeights.length / 2)) {
+            loc = 3
+            dropNum = getRandom(0, 1)
+          } else if (maxVal < pumpkinWeights.length) {
             loc = 2
             dropNum = getRandom(0, 2)
           } else {
@@ -161,20 +165,9 @@ export default {
           }
           this.tatal += dropNum
           // console.log('this.tatal', this.tatal)
-          let newPumpkins = []
-          for (let i = 0; i < newPumpkinWeight.length; i++) {
-            let weight = newPumpkinWeight[i]
-            newPumpkins = [...newPumpkins, {
-              status: true,
-              category: config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)],
-              left: getRandom(0, (this.width - 100)),
-              top: getRandom(config.top - 100, config.top - 50),
-              speed: getRandom(config.speed - 1 + config.difficulty, config.speed + config.difficulty),
-              weight: weight
-            }]
-          }
+          let newPumpkins = this.addNewPumpkins(newPumpkinWeight, speed)
           this.pumpkins.push(...newPumpkins)
-          this.gapT = config.gapTime
+          this.gapT = gapTime
         }
         // 倒计时1分钟
         this.duration -= intervaTime
@@ -190,6 +183,40 @@ export default {
           this.gameOver()
         }
       }, intervaTime)
+    },
+    initWeight () {
+      const rules = [1, 3, 5, 10]
+      let pumpkinNum = this.lists.length <= 4 ? this.lists : weightRules[getRandom(0, (weightRules.length - 1))]
+      let pumpkinWeights = []
+      pumpkinNum.forEach((d, i) => {
+        if (d > 0) {
+          for (let j = 0; j < d; j++) {
+            pumpkinWeights = [...pumpkinWeights, rules[i]]
+          }
+        }
+      })
+      pumpkinWeights.sort(_ => {
+        return 0.5 - Math.random()
+      })
+      console.log('pumpkinNum', pumpkinNum)
+      console.log('pumpkinWeights', pumpkinWeights)
+      return pumpkinWeights
+    },
+    addNewPumpkins (newPumpkinWeight, speed, isFirst) {
+      let newPumpkins = []
+      for (let i = 0; i < newPumpkinWeight.length; i++) {
+        let weight = newPumpkinWeight[i]
+        newPumpkins = [...newPumpkins, {
+          status: true,
+          category: config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)],
+          left: !isFirst ? getRandom(0, (this.width - 50)) : getRandom(50, (this.width - 50)),
+          top: !isFirst ? getRandom(config.top - 100, config.top - 50) : getRandom(config.top + 150, config.top + 200),
+          rotate: getRandom(-45, 45),
+          speed: getRandom(speed - 1, speed),
+          weight: weight
+        }]
+      }
+      return newPumpkins
     },
     game () {
       let index = this.pumpkins.length
@@ -294,11 +321,14 @@ export default {
   background-repeat: no-repeat;
   border-radius: 50%;
   color: #00f;
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 600;
   text-align: center;
   line-height: 50px;
   z-index: 10;
+  span {
+    pointer-events: none;
+  }
 }
 .pumpkin0g {
   background-image: url(../assets/pumpkin1.png);
@@ -307,7 +337,7 @@ export default {
   background-image: url(../assets/pumpkin1.png);
 }
 .pumpkin3g {
-  background-image: url(../assets/logo.png);
+  background-image: url(../assets/pumpkin1.png);
 }
 .pumpkin5g {
   background-image: url(../assets/pumpkin1.png);
@@ -327,7 +357,7 @@ export default {
 }
 .bat {
   .troublemaker;
-  background-image: url(../assets/witch_right.png);
+  background-image: url(../assets/witch_left.png);
 }
 .ghost {
   .troublemaker;
