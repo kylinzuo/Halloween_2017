@@ -25,7 +25,7 @@
       获得南瓜重量：{{weight}}g
     </div>
     <div class='test-btns'>
-      <button v-for="(btn, index) in btns" @click="start(index)">{{btn}}</button>
+      <button v-for="(btn, index) in btns" @click="start(index)" :key="index">{{btn}}</button>
     </div>
   </div>
 </template>
@@ -36,8 +36,7 @@
  * @param {@} updateWeight 自定义事件 => 实现反馈获得的南瓜重量
  * @param {@} gameOver 自定义事件 => 游戏结束后反馈结果
  */
-import { getRandom } from '@/util'
-import { config, troublemaker, weightRules } from '@/game/config_dom.js'
+import { getRandom, config, troublemaker, weightRules } from '@/game/config_dom.js'
 export default {
   name: 'game',
   props: {
@@ -102,6 +101,7 @@ export default {
         counts: [...this.counts],
         endStatus: {...this.endStatus}
       })
+      console.log('南瓜总个数', this.tatal)
       // 切换背景
       // let bgIndex = getRandom(0, 1)
       // this.background = config.backgrounds[bgIndex]
@@ -138,7 +138,6 @@ export default {
           let newTrobles = []
           for (let i = 0; i < this.produceTroubleTime.num; i++) {
             let category = {...config.troublemakers[getRandom(0, 7)]}
-            console.log('category', category)
             // 捣蛋元素x轴位置
             let leftLoc = [getRandom(-200, -75), (this.width + getRandom(0, 200))]
             let left = leftLoc[['right', 'left'].indexOf(category.direction)]
@@ -153,7 +152,6 @@ export default {
                   ? -135
                   : -45
               : 0
-            console.log('left', left, speed)
             newTrobles = [...newTrobles, {
               status: true,
               category: category,
@@ -191,7 +189,7 @@ export default {
           for (var i = 0; i < dropNum; i++) {
             newPumpkinWeight.push(0)
           }
-          this.tatal += dropNum
+          this.tatal += newPumpkinWeight.length
           // console.log('this.tatal', this.tatal)
           let newPumpkins = this.addNewPumpkins(newPumpkinWeight, speed)
           this.pumpkins.push(...newPumpkins)
@@ -419,6 +417,7 @@ export default {
 }
 .ghost_tl {
   .troublemaker;
+  background-size: 90%;
   background-image: url(../assets/img/game/ghost_tl.png);
   width: 65px;
   height: 65px;
@@ -432,7 +431,6 @@ export default {
 }
 .ghostl_tl {
   .troublemaker;
-  background-size: 90%;
   background-image: url(../assets/img/game/ghostl_tl.png);
   width: 45px;
   height: 45px;
