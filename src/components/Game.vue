@@ -313,10 +313,10 @@ export default {
   z-index: 1;
 }
 .halloween-bg1 {
-  background-image: url(../assets/halloween-bg1.png);
+  background-image: url(../assets/img/game/halloween-bg1.png);
 }
 .halloween-bg2 {
-  background-image: url(../assets/halloween-bg2.png);
+  background-image: url(../assets/img/game/halloween-bg2.png);
 }
 /* todo 测试按钮 */
 .countdown {
@@ -353,45 +353,45 @@ export default {
   }
 }
 .pumpkin0g {
-  background-image: url(../assets/pumpkin0g.png);
+  background-image: url(../assets/img/game/pumpkin0g.png);
 }
 .pumpkin1g {
-  background-image: url(../assets/pumpkin1g.png);
+  background-image: url(../assets/img/game/pumpkin1g.png);
 }
 .pumpkin3g {
-  background-image: url(../assets/pumpkin3g.png);
+  background-image: url(../assets/img/game/pumpkin3g.png);
 }
 .pumpkin5g {
-  background-image: url(../assets/pumpkin5g.png);
+  background-image: url(../assets/img/game/pumpkin5g.png);
 }
 .pumpkin10g {
   background-size: contain;
-  background-image: url(../assets/pumpkin10g.png);
+  background-image: url(../assets/img/game/pumpkin10g.png);
   width: 100px;
 }
 .pumpkin0g-score {
   span {
-    background-image: url(../assets/weight0g.png);
+    background-image: url(../assets/img/game/weight0g.png);
   }
 }
 .pumpkin1g-score {
   span {
-    background-image: url(../assets/weight1g.png);
+    background-image: url(../assets/img/game/weight1g.png);
   }
 }
 .pumpkin3g-score {
   span {
-    background-image: url(../assets/weight3g.png);
+    background-image: url(../assets/img/game/weight3g.png);
   }
 }
 .pumpkin5g-score {
   span {
-    background-image: url(../assets/weight5g.png);
+    background-image: url(../assets/img/game/weight5g.png);
   }
 }
 .pumpkin10g-score {
   span {
-    background-image: url(../assets/weight10g.png);
+    background-image: url(../assets/img/game/weight10g.png);
   }
 }
 .troublemaker() {
@@ -405,39 +405,41 @@ export default {
 .witch_tl {
   .troublemaker;
   background-size: 90%;
-  background-image: url(../assets/witch_tl.png);
+  background-image: url(../assets/img/game/witch_tl.png);
 }
 .witch_tr {
   .troublemaker;
   background-size: 90%;
-  background-image: url(../assets/witch_tr.png);
+  background-image: url(../assets/img/game/witch_tr.png);
 }
 .bat {
   .troublemaker;
-  background-image: url(../assets/bat.png);
+  background-image: url(../assets/img/game/bat.png);
   height: 50px;
 }
 .ghost_tl {
   .troublemaker;
-  background-image: url(../assets/ghost_tl.png);
+  background-image: url(../assets/img/game/ghost_tl.png);
   width: 65px;
   height: 65px;
 }
 .ghost_tr {
   .troublemaker;
-  background-image: url(../assets/ghost_tr.png);
+  background-size: 90%;
+  background-image: url(../assets/img/game/ghost_tr.png);
   width: 65px;
   height: 65px;
 }
 .ghostl_tl {
   .troublemaker;
-  background-image: url(../assets/ghostl_tl.png);
+  background-size: 90%;
+  background-image: url(../assets/img/game/ghostl_tl.png);
   width: 45px;
   height: 45px;
 }
 .ghostl_tr {
   .troublemaker;
-  background-image: url(../assets/ghostl_tr.png);
+  background-image: url(../assets/img/game/ghostl_tr.png);
   width: 45px;
   height: 45px;
 }
