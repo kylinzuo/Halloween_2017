@@ -3,6 +3,7 @@
     class="game"
     ref="game"
     :class="[background]"
+    @touchmove.prevent
   >
     <div
       v-for="(pumpkin, index) in pumpkins"
@@ -19,20 +20,22 @@
     >
       <span :style="{opacity: pumpkin.show ? 1 : 0}"></span>
     </div>
-    <div class="start-btn" @touchstart="gameStart()">开始</div>
     <div class="countdown">倒计时：{{countdown}}</div>
     <div class="progress-bar-wrapper">
-      <div
-        class="progress-bar"
-        :style="{
-          width: progressBarL
-        }"
-      ></div>
+      获得南瓜重量：{{weight}}g
+    </div>
+    <div class='test-btns'>
+      <button v-for="(btn, index) in btns" @click="start(index)">{{btn}}</button>
     </div>
   </div>
 </template>
 
 <script>
+/**
+ * @param {[number]} lists 南瓜重量分布规则 => [50, 10, 20, 2]
+ * @param {@} updateWeight 自定义事件 => 实现反馈获得的南瓜重量
+ * @param {@} gameOver 自定义事件 => 游戏结束后反馈结果
+ */
 import { getRandom } from '@/util'
 import { config, troublemaker, weightRules } from '@/game/config_dom.js'
 export default {
@@ -45,6 +48,7 @@ export default {
   },
   data () {
     return {
+      btns: ['速度1', '速度2', '速度3', '速度4'],
       background: config.backgrounds[0],
       isFirst: true,
       width: 0,
@@ -88,6 +92,9 @@ export default {
     console.log('config', config)
   },
   methods: {
+    start (level) {
+      this.gameStart(level)
+    },
     gameOver () {
       this.duration = 0
       this.$emit('gameOver', {
@@ -96,17 +103,15 @@ export default {
         endStatus: {...this.endStatus}
       })
       // 切换背景
-      let bgIndex = getRandom(0, 1)
-      this.background = config.backgrounds[bgIndex]
+      // let bgIndex = getRandom(0, 1)
+      // this.background = config.backgrounds[bgIndex]
     },
     /**
      * 启动游戏
      * @param {level} value 游戏难度 0-简单 1-中等 2-困难 3-最难 默认中等难度
      */
     gameStart (level) {
-      // todo => test
-      let difficulty = getRandom(0, 3)
-      // let difficulty = level !== undefined ? level : config.difficulty
+      let difficulty = level !== undefined ? level : config.difficulty
       let speed = config.speed[difficulty]
       let gapTime = config.gapTime[difficulty]
       console.log('====', speed, gapTime)
@@ -132,14 +137,31 @@ export default {
         if (config.duration - this.duration === this.produceTroubleTime.time) {
           let newTrobles = []
           for (let i = 0; i < this.produceTroubleTime.num; i++) {
+            let category = {...config.troublemakers[getRandom(0, 7)]}
+            console.log('category', category)
+            // 捣蛋元素x轴位置
+            let leftLoc = [getRandom(-200, -75), (this.width + getRandom(0, 200))]
+            let left = leftLoc[['right', 'left'].indexOf(category.direction)]
+            let speed = [-1, 1][['left', 'right'].indexOf(category.direction)] * getRandom(1, 3)
+            let direction = getRandom(0, 1) === 0 ? 'up' : 'down'
+            let rotate = category.en === 'bat'
+              ? category.direction === 'left'
+                ? direction === 'up'
+                  ? 135
+                  : 45
+                : direction === 'up'
+                  ? -135
+                  : -45
+              : 0
+            console.log('left', left, speed)
             newTrobles = [...newTrobles, {
               status: true,
-              category: config.troublemakers[getRandom(0, 2)],
-              left: this.width + getRandom(0, 200),
+              category: category,
+              left: left,
               top: getRandom(config.top, this.height - config.bottom),
-              rotate: 0,
-              speed: getRandom(1, 3),
-              direction: getRandom(0, 1) === 0 ? 'up' : 'down'
+              rotate: rotate,
+              speed: speed,
+              direction: direction
             }]
           }
           this.pumpkins.push(...newTrobles)
@@ -230,11 +252,10 @@ export default {
         if (this.pumpkins[index].category.type === config.pumpkin) {
           this.pumpkins[index].top += this.pumpkins[index].speed
           if (this.pumpkins[index].top > (this.height - config.bottom)) {
-            // this.pumpkins.splice(index, 1)
             this.pumpkins[index].status = false
           }
         } else if (this.pumpkins[index].category.type === config.troublemaker) {
-          this.pumpkins[index].left -= this.pumpkins[index].speed
+          this.pumpkins[index].left += this.pumpkins[index].speed
           let top = this.pumpkins[index].top + (this.pumpkins[index].direction === 'up' ? -getRandom(0, 2) : getRandom(0, 2))
           if (top < config.top) {
             this.pumpkins[index].direction = 'down'
@@ -242,8 +263,7 @@ export default {
             this.pumpkins[index].direction = 'up'
           }
           this.pumpkins[index].top = top
-          if (this.pumpkins[index].left < -50) {
-            // this.pumpkins.splice(index, 1)
+          if ((this.pumpkins[index].category.direction === 'left' && this.pumpkins[index].left < -50) || (this.pumpkins[index].category.direction === 'right' && this.pumpkins[index].left > this.width)) {
             this.pumpkins[index].status = false
           }
         }
@@ -299,19 +319,6 @@ export default {
   background-image: url(../assets/halloween-bg2.png);
 }
 /* todo 测试按钮 */
-.start-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 80px;
-  height: 20px;
-  line-height: 20px;
-  background: #fff;
-  color: #000;
-  font-size: 14px;
-  text-align: center;
-  border-radius: 10px;
-}
 .countdown {
   position: absolute;
   top: 50px;
@@ -334,11 +341,6 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   border-radius: 50%;
-  color: #00f;
-  font-size: 30px;
-  font-weight: 600;
-  text-align: center;
-  line-height: 50px;
   z-index: 10;
   span {
     pointer-events: none;
@@ -363,8 +365,9 @@ export default {
   background-image: url(../assets/pumpkin5g.png);
 }
 .pumpkin10g {
+  background-size: contain;
   background-image: url(../assets/pumpkin10g.png);
-  width: 80px;
+  width: 100px;
 }
 .pumpkin0g-score {
   span {
@@ -392,33 +395,73 @@ export default {
   }
 }
 .troublemaker() {
-  background-color: rgba(255, 255, 255, 0.5);
-  width: 75px;
-  height: 75px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 80px;
+  height: 80px;
   z-index: 20;
 }
-.witch {
+.witch_tl {
   .troublemaker;
-  background-image: url(../assets/witch_left.png);
+  background-size: 90%;
+  background-image: url(../assets/witch_tl.png);
+}
+.witch_tr {
+  .troublemaker;
+  background-size: 90%;
+  background-image: url(../assets/witch_tr.png);
 }
 .bat {
   .troublemaker;
-  background-image: url(../assets/witch_left.png);
+  background-image: url(../assets/bat.png);
+  height: 50px;
 }
-.ghost {
+.ghost_tl {
   .troublemaker;
-  background-image: url(../assets/witch_left.png);
+  background-image: url(../assets/ghost_tl.png);
+  width: 65px;
+  height: 65px;
+}
+.ghost_tr {
+  .troublemaker;
+  background-image: url(../assets/ghost_tr.png);
+  width: 65px;
+  height: 65px;
+}
+.ghostl_tl {
+  .troublemaker;
+  background-image: url(../assets/ghostl_tl.png);
+  width: 45px;
+  height: 45px;
+}
+.ghostl_tr {
+  .troublemaker;
+  background-image: url(../assets/ghostl_tr.png);
+  width: 45px;
+  height: 45px;
 }
 .progress-bar-wrapper {
   position: absolute;
   bottom: 50px;
   left: 10%;
   width: 80%;
-  height: 5px;
-  background: #fff;
+  color: #fff;
 }
-.progress-bar {
-  background: orange;
-  height: 100%;
+// todo => 测试
+.test-btns {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 30px;
+  button {
+    border: none;
+    border-radius: 10px;
+    background: #fff;
+    color: #000;
+    line-height: 30px;
+    margin: 0 20px;
+  }
 }
 </style>

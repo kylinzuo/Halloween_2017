@@ -36,19 +36,52 @@ export const typeDict = {
     score: 'pumpkin10g-score',
     weight: 10
   },
-  witch: {
+  witch_tl: {
+    direction: 'left',
     type: 'troublemaker',
-    en: 'witch',
+    en: 'witch_tl',
     cn: '女巫'
   },
-  bat: {
+  witch_tr: {
+    direction: 'right',
+    type: 'troublemaker',
+    en: 'witch_tr',
+    cn: '女巫'
+  },
+  bat_tl: {
+    direction: 'left',
     type: 'troublemaker',
     en: 'bat',
     cn: '蝙蝠'
   },
-  ghost: {
+  bat_tr: {
+    direction: 'right',
     type: 'troublemaker',
-    en: 'ghost',
+    en: 'bat',
+    cn: '蝙蝠'
+  },
+  ghost_tl: {
+    direction: 'left',
+    type: 'troublemaker',
+    en: 'ghost_tl',
+    cn: '幽灵'
+  },
+  ghost_tr: {
+    direction: 'right',
+    type: 'troublemaker',
+    en: 'ghost_tr',
+    cn: '幽灵'
+  },
+  ghostl_tl: {
+    direction: 'left',
+    type: 'troublemaker',
+    en: 'ghostl_tl',
+    cn: '幽灵'
+  },
+  ghostl_tr: {
+    direction: 'right',
+    type: 'troublemaker',
+    en: 'ghostl_tr',
     cn: '幽灵'
   }
 }
@@ -62,7 +95,7 @@ export const config = {
   pumpkin: 'pumpkin',
   pumpkins: [typeDict['pumpkin0g'], typeDict['pumpkin1g'], typeDict['pumpkin3g'], typeDict['pumpkin5g'], typeDict['pumpkin10g']],
   troublemaker: 'troublemaker',
-  troublemakers: [typeDict['witch'], typeDict['bat'], typeDict['ghost']],
+  troublemakers: [typeDict['witch_tl'], typeDict['witch_tr'], typeDict['bat_tl'], typeDict['bat_tr'], typeDict['ghost_tl'], typeDict['ghost_tr'], typeDict['ghostl_tl'], typeDict['ghostl_tr']],
   top: 0, // 100
   bottom: 130,
   progressBarL: 200

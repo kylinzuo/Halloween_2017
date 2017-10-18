@@ -22,10 +22,12 @@ export default {
   },
   methods: {
     gameOver (data) {
+      let status = ['时间到，', '碰到捣蛋鬼，']
       console.log('游戏结束', data)
+      alert(status[data.endStatus.status] + '游戏结束!' + '获得重量' + data.weight + 'g')
     },
     updateWeight (weight) {
-      console.log('%c 新增重量', 'color: red', weight)
+      // console.log('%c 新增重量', 'color: red', weight)
     }
   }
 }
