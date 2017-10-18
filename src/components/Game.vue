@@ -1,5 +1,9 @@
 <template>
-  <div class="game" ref="game">
+  <div
+    class="game"
+    ref="game"
+    :class="[background]"
+  >
     <div
       v-for="(pumpkin, index) in pumpkins"
       :key="index"
@@ -13,9 +17,7 @@
       }"
       @click="gainPumpkin(pumpkin, index)"
     >
-      <span :style="{opacity: pumpkin.show ? 1 : 0}">
-        {{pumpkin.weight ? '+' + pumpkin.weight : ''}}
-      </span>
+      <span :style="{opacity: pumpkin.show ? 1 : 0}"></span>
     </div>
     <div class="start-btn" @touchstart="gameStart()">开始</div>
     <div class="countdown">倒计时：{{countdown}}</div>
@@ -43,6 +45,7 @@ export default {
   },
   data () {
     return {
+      background: config.backgrounds[0],
       isFirst: true,
       width: 0,
       height: 0,
@@ -92,15 +95,18 @@ export default {
         counts: [...this.counts],
         endStatus: {...this.endStatus}
       })
+      // 切换背景
+      let bgIndex = getRandom(0, 1)
+      this.background = config.backgrounds[bgIndex]
     },
     /**
      * 启动游戏
      * @param {level} value 游戏难度 0-简单 1-中等 2-困难 3-最难 默认中等难度
      */
     gameStart (level) {
-      // let difficulty = level !== undefined ? level : config.difficulty
       // todo => test
       let difficulty = getRandom(0, 3)
+      // let difficulty = level !== undefined ? level : config.difficulty
       let speed = config.speed[difficulty]
       let gapTime = config.gapTime[difficulty]
       console.log('====', speed, gapTime)
@@ -208,7 +214,7 @@ export default {
         let weight = newPumpkinWeight[i]
         newPumpkins = [...newPumpkins, {
           status: true,
-          category: config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)],
+          category: {...config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)]},
           left: !isFirst ? getRandom(0, (this.width - 50)) : getRandom(50, (this.width - 50)),
           top: !isFirst ? getRandom(config.top - 100, config.top - 50) : getRandom(config.top + 150, config.top + 200),
           rotate: getRandom(-45, 45),
@@ -245,13 +251,16 @@ export default {
     },
     gainPumpkin (p, index) {
       console.log(p, index)
-      if (!this.status) return
+      if (!this.status && !this.pumpkins[index].show) return
       if (p.category.type === config.pumpkin) {
         this.weight += p.weight
         this.pumpkins[index].show = true
+        this.pumpkins[index].category.en = this.pumpkins[index].category.score
         setTimeout(_ => {
           this.pumpkins.splice(index, 1)
-        }, 50)
+        }, 100)
+        // 新获得的重量上传
+        this.$emit('updateWeight', p.weight)
         // 添加用户点击统计数据
         this.counts[[0, 1, 3, 5, 10].indexOf(p.weight)] += 1
       } else {
@@ -276,13 +285,18 @@ export default {
 <style lang="less" scoped>
 .game {
   position: relative;
-  background-image: url(../assets/bg.jpeg);
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
   height: 100%;
   overflow: hidden;
   z-index: 1;
+}
+.halloween-bg1 {
+  background-image: url(../assets/halloween-bg1.png);
+}
+.halloween-bg2 {
+  background-image: url(../assets/halloween-bg2.png);
 }
 /* todo 测试按钮 */
 .start-btn {
@@ -314,11 +328,11 @@ export default {
 }
 .round {
   position: absolute;
-  width: 50px;
-  height: 50px;
-  background-image: url(../assets/pumpkin1.png);
+  width: 65px;
+  height: 65px;
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: center;
   border-radius: 50%;
   color: #00f;
   font-size: 30px;
@@ -328,22 +342,54 @@ export default {
   z-index: 10;
   span {
     pointer-events: none;
+    display: block;
+    width: inherit;
+    height: inherit;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 }
 .pumpkin0g {
-  background-image: url(../assets/pumpkin1.png);
+  background-image: url(../assets/pumpkin0g.png);
 }
 .pumpkin1g {
-  background-image: url(../assets/pumpkin1.png);
+  background-image: url(../assets/pumpkin1g.png);
 }
 .pumpkin3g {
-  background-image: url(../assets/pumpkin1.png);
+  background-image: url(../assets/pumpkin3g.png);
 }
 .pumpkin5g {
-  background-image: url(../assets/pumpkin1.png);
+  background-image: url(../assets/pumpkin5g.png);
 }
 .pumpkin10g {
-  background-image: url(../assets/pumpkin1.png);
+  background-image: url(../assets/pumpkin10g.png);
+  width: 80px;
+}
+.pumpkin0g-score {
+  span {
+    background-image: url(../assets/weight0g.png);
+  }
+}
+.pumpkin1g-score {
+  span {
+    background-image: url(../assets/weight1g.png);
+  }
+}
+.pumpkin3g-score {
+  span {
+    background-image: url(../assets/weight3g.png);
+  }
+}
+.pumpkin5g-score {
+  span {
+    background-image: url(../assets/weight5g.png);
+  }
+}
+.pumpkin10g-score {
+  span {
+    background-image: url(../assets/weight10g.png);
+  }
 }
 .troublemaker() {
   background-color: rgba(255, 255, 255, 0.5);

@@ -1,6 +1,6 @@
 <template>
   <div class="demo">
-    <Game ref='game' :lists="lists" @gameOver="gameOver"></Game>
+    <Game ref='game' :lists="lists" @updateWeight="updateWeight" @gameOver="gameOver"></Game>
   </div>
 </template>
 
@@ -23,6 +23,9 @@ export default {
   methods: {
     gameOver (data) {
       console.log('游戏结束', data)
+    },
+    updateWeight (weight) {
+      console.log('%c 新增重量', 'color: red', weight)
     }
   }
 }

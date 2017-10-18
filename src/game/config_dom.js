@@ -5,17 +5,20 @@ export const typeDict = {
     type: 'pumpkin',
     en: 'pumpkin0g',
     cn: '0g南瓜',
+    score: 'pumpkin0g-score',
     weight: 0
   },
   pumpkin1g: {
     type: 'pumpkin',
     en: 'pumpkin1g',
     cn: '1g南瓜',
+    score: 'pumpkin1g-score',
     weight: 1
   },
   pumpkin3g: {
     type: 'pumpkin',
     en: 'pumpkin3g',
+    score: 'pumpkin3g-score',
     cn: '3g南瓜',
     weight: 3
   },
@@ -23,12 +26,14 @@ export const typeDict = {
     type: 'pumpkin',
     en: 'pumpkin5g',
     cn: '5g南瓜',
+    score: 'pumpkin5g-score',
     weight: 5
   },
   pumpkin10g: {
     type: 'pumpkin',
     en: 'pumpkin10g',
     cn: '10g南瓜',
+    score: 'pumpkin10g-score',
     weight: 10
   },
   witch: {
@@ -48,6 +53,7 @@ export const typeDict = {
   }
 }
 export const config = {
+  backgrounds: ['halloween-bg1', 'halloween-bg2'],
   distance: 200,
   speed: [3, 4, 5, 6],
   difficulty: 1,
@@ -58,7 +64,7 @@ export const config = {
   troublemaker: 'troublemaker',
   troublemakers: [typeDict['witch'], typeDict['bat'], typeDict['ghost']],
   top: 0, // 100
-  bottom: 150,
+  bottom: 130,
   progressBarL: 200
 }
 // 产生捣蛋鬼时间与数量
