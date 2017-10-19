@@ -26,6 +26,7 @@
 
 <script>
 /**
+ * @param {number} level 设置游戏难度 => 0, 1, 2, 3 需先设置游戏难度
  * @param {[number]} lists 南瓜重量分布规则 => [50, 10, 20, 2]
  * @param {@} updateWeight 自定义事件 => 实现反馈获得的南瓜重量
  * @param {@} gameOver 自定义事件 => endStatus 0-正常结束   1-碰到女巫 2-碰到幽灵 3-碰到蝙蝠
@@ -36,6 +37,10 @@ export default {
   props: {
     lists: {
       type: Array,
+      required: true
+    },
+    level: {
+      type: Number,
       required: true
     }
   },
@@ -84,6 +89,13 @@ export default {
   watch: {
     lists: function (newVal, oldVal) {
       console.log('南瓜重量数组发生变化！', newVal, oldVal)
+      setTimeout(_ => {
+        // 初始化游戏
+        this.initGame()
+        // 切换背景
+        let bgIndex = getRandom(0, 1)
+        this.background = config.backgrounds[bgIndex]
+      }, 100)
     }
   },
   methods: {
@@ -96,13 +108,6 @@ export default {
         endStatus: this.endStatus
       })
       console.log('南瓜总个数', this.tatal)
-      // 游戏结束后重新初始化游戏
-      setTimeout(_ => {
-        this.initGame()
-        // 切换背景
-        let bgIndex = getRandom(0, 1)
-        this.background = config.backgrounds[bgIndex]
-      }, 1000)
     },
     initGame () {
       // 初始化游戏状态
@@ -113,16 +118,21 @@ export default {
       this.endStatus = 0
       // 初始界面需要有两个南瓜
       this.pumpkinWeights = this.initWeight()
-      this.pumpkins = this.addNewPumpkins(this.pumpkinWeights.splice(0, getRandom(2, 3)), 4, true)
+      this.pumpkins = this.addNewPumpkins(this.pumpkinWeights.splice(0, getRandom(2, 3)), 3, true)
     },
     /**
      * 启动游戏
      * @param {level} value 游戏难度 0-简单 1-中等 2-困难 3-最难 默认中等难度
      */
-    gameStart (level) {
+    gameStart () {
+      setTimeout(_ => {
+        this.start()
+      }, 100)
+    },
+    start () {
       this.times = 0
       this.status = true
-      let difficulty = level !== undefined ? level : config.difficulty
+      let difficulty = this.level !== undefined ? this.level : config.difficulty
       let speed = config.speed[difficulty]
       let gapTime = config.gapTime[difficulty]
       this.gapT = gapTime
@@ -175,13 +185,13 @@ export default {
           let dropNum = 0
           if (maxVal < Math.ceil(pumpkinWeights.length / 2)) {
             loc = 3
-            dropNum = getRandom(0, 1)
+            dropNum = 2 // getRandom(0, 1)
           } else if (maxVal < pumpkinWeights.length) {
             loc = 2
-            dropNum = getRandom(0, 2)
+            dropNum = 3 // getRandom(0, 2)
           } else {
             loc = 1
-            dropNum = getRandom(0, 3)
+            dropNum = 4 // getRandom(0, 3)
           }
           --maxVal
           let newPumpkinWeight = pumpkinWeights.splice(0, loc)
@@ -207,8 +217,48 @@ export default {
       }, intervaTime)
     },
     initWeight () {
+      let initWeightArr = []
+      let dropTimes = config.dropTimes[this.level]
+      console.log('dropTimes', dropTimes)
+      for (let i = 0; i < dropTimes; i++) {
+        initWeightArr = [...initWeightArr, []]
+      }
       const rules = [1, 3, 5, 10]
       let pumpkinNum = this.lists && this.lists.length > 0 ? [...this.lists] : weightRules[getRandom(0, (weightRules.length - 1))]
+      let tempArr = []
+      for (let n = pumpkinNum.length - 1; n >= 0; n--) {
+        console.log('pumpkinNum[n]', pumpkinNum[n])
+        if (n >= 2 && pumpkinNum[n] !== 0) {
+          let gap = Math.ceil(dropTimes / pumpkinNum[n])
+          let randomGap = getRandom(0, gap)
+          let num = pumpkinNum[n]
+          for (let i = randomGap; num > 0; i += gap) {
+            num--
+            if (i < initWeightArr.length) {
+              if (initWeightArr[i].length > 0 && i < (dropTimes - 1)) {
+                initWeightArr[i + 1].push(rules[n])
+              } else {
+                initWeightArr[i].push(rules[n])
+              }
+            } else {
+              let randomI = getRandom(0, (initWeightArr.length - 1))
+              let offset = randomI > initWeightArr.length / 2 ? -1 : 1
+              for (let m = 0; m < 100; m++) {
+                if (initWeightArr[randomI].length > 0) {
+                  randomI += offset
+                  continue
+                } else {
+                  initWeightArr[randomI].push(rules[n])
+                  break
+                }
+              }
+            }
+          }
+        } else {
+          tempArr = [pumpkinNum[n], ...tempArr]
+        }
+      }
+      console.log('initWeightArr ===>>', initWeightArr, tempArr, pumpkinNum)
       let pumpkinWeights = []
       pumpkinNum.forEach((d, i) => {
         if (d > 0) {
@@ -232,7 +282,7 @@ export default {
           status: true,
           category: {...config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)]},
           left: !isFirst ? getRandom(0, (this.width - 50)) : getRandom(50, (this.width - 50)),
-          top: !isFirst ? getRandom(config.top - 100, config.top - 50) : getRandom(config.top + 150, config.top + 200),
+          top: !isFirst ? getRandom(config.top - 100, config.top - 50) : getRandom(config.top + 100, config.top + 150),
           rotate: getRandom(-45, 45),
           speed: getRandom(speed - 1, speed),
           weight: weight

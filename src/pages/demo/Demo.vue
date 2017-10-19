@@ -1,6 +1,6 @@
 <template>
   <div class="demo">
-    <Game ref='game' :lists="lists" @updateWeight="updateWeight" @gameOver="gameOver"></Game>
+    <Game ref='game' :lists="lists" :level="level" @updateWeight="updateWeight" @gameOver="gameOver"></Game>
     <!-- <div class="countdown">倒计时：{{countdown}}</div> -->
     <div class="progress-bar-wrapper">
       获得南瓜重量：{{weight}}g
@@ -19,27 +19,27 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
-      lists: weightRules[getRandom(0, weightRules.length)],
+      lists: [...weightRules[getRandom(0, (weightRules.length - 1))]],
       countdown: 0,
       weight: 0,
-      btns: ['速度1', '速度2', '速度3', '速度4']
+      btns: ['速度1', '速度2', '速度3', '速度4'],
+      level: 0
     }
-  },
-  mounted () {
-    // this.$refs.game.gameStart()
   },
   components: {
     Game
   },
   methods: {
     start (level) {
+      console.log('level', level)
+      this.level = level
       this.weight = 0
-      this.$refs.game.gameStart(level)
+      this.$refs.game.gameStart()
     },
     gameOver (data) {
       // let status = ['时间到，', '碰到女巫，', '碰到幽灵，', '碰到蝙蝠，']
       console.log('游戏结束', data)
-      this.lists = weightRules[getRandom(0, weightRules.length)]
+      this.lists = [...weightRules[getRandom(0, (weightRules.length - 1))]]
       // alert(status[data.endStatus] + '游戏结束!' + '获得重量' + data.weight + 'g')
     },
     updateWeight (weight) {

@@ -104,7 +104,8 @@ export const config = {
   troublemakers: [typeDict['witch_tl'], typeDict['witch_tr'], typeDict['bat_tl'], typeDict['bat_tr'], typeDict['ghost_tl'], typeDict['ghost_tr'], typeDict['ghostl_tl'], typeDict['ghostl_tr']],
   top: 0, // 100
   bottom: 130,
-  progressBarL: 200
+  progressBarL: 200,
+  dropTimes: [49, 59, 73, 98]
 }
 // 产生捣蛋鬼时间与数量
 export function troublemaker (difficulty, gapTime) {
