@@ -150,7 +150,9 @@ export default {
       this.isFirst = false
       this.timer = setInterval(() => {
         // 是否添加捣蛋鬼
-        if (config.duration - this.duration === this.produceTroubleTime.time) {
+        let condition = config.duration - this.duration === this.produceTroubleTime.time
+        if (condition) {
+          console.log('condition', condition, config.duration, this.duration, this.produceTroubleTime.time)
           let newTrobles = []
           for (let i = 0; i < this.produceTroubleTime.num; i++) {
             let category = {...config.troublemakers[getRandom(0, 7)]}
@@ -173,7 +175,9 @@ export default {
             newTrobles = [...newTrobles, troble]
           }
           this.pumpkins.push(...newTrobles)
+          console.log('-----------------------')
           if (this.produceTroubleTimes.length > 0) {
+            console.log('=======================')
             this.produceTroubleTime = this.produceTroubleTimes.shift()
           }
         }

@@ -126,6 +126,7 @@ export function troublemaker (difficulty, gapTime) {
     }]
     return next
   })
+  console.log('intervals', intervals)
   return intervals
 }
 
