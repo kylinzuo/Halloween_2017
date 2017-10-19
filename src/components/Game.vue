@@ -12,20 +12,14 @@
       class="round"
       :class="[pumpkin.category.en]"
       :style="{
-        left: pumpkin.left + 'px',
-        top: pumpkin.top + 'px',
-        transform: 'rotate(' + pumpkin.rotate + 'deg)'
+        transform: 'translate(' + pumpkin.left + 'px,' + pumpkin.top + 'px)' + 'rotate(' + pumpkin.rotate + 'deg)'
       }"
       @click="gainPumpkin(pumpkin, index)"
     >
       <span :style="{opacity: pumpkin.show ? 1 : 0}"></span>
     </div>
-    <div class="countdown">倒计时：{{countdown}}</div>
-    <div class="progress-bar-wrapper">
-      获得南瓜重量：{{weight}}g
-    </div>
-    <div class='test-btns'>
-      <button v-for="(btn, index) in btns" @click="start(index)" :key="index">{{btn}}</button>
+    <div class="tips-btn" v-if="isFirst">
+      <img src="../assets/img/game/tips-btn.png" alt="tips-btn">
     </div>
   </div>
 </template>
@@ -34,9 +28,9 @@
 /**
  * @param {[number]} lists 南瓜重量分布规则 => [50, 10, 20, 2]
  * @param {@} updateWeight 自定义事件 => 实现反馈获得的南瓜重量
- * @param {@} gameOver 自定义事件 => 游戏结束后反馈结果
+ * @param {@} gameOver 自定义事件 => endStatus 0-正常结束   1-碰到女巫 2-碰到幽灵 3-碰到蝙蝠
  */
-import { getRandom, config, troublemaker, weightRules } from '@/game/config_dom.js'
+import { getRandom, config, troublemaker, weightRules, rotateDeg } from '@/game/config_dom.js'
 export default {
   name: 'game',
   props: {
@@ -47,7 +41,6 @@ export default {
   },
   data () {
     return {
-      btns: ['速度1', '速度2', '速度3', '速度4'],
       background: config.backgrounds[0],
       isFirst: true,
       width: 0,
@@ -63,7 +56,8 @@ export default {
       tatal: 0,
       weight: 0,
       counts: [0, 0, 0, 0, 0],
-      endStatus: {} // status 0-游戏时间到，正常结束   1-碰到捣蛋元素提前结束
+      endStatus: 0, // endStatus 0-正常结束   1-碰到女巫 2-碰到幽灵 3-碰到蝙蝠
+      times: 0
     }
   },
   computed: {
@@ -85,52 +79,62 @@ export default {
     let wrapper = this.$refs.game
     this.width = wrapper.offsetWidth
     this.height = wrapper.offsetHeight
-    // 初始界面需要有两个南瓜
-    this.pumpkinWeights = this.initWeight()
-    this.pumpkins = this.addNewPumpkins(this.pumpkinWeights.splice(0, getRandom(2, 3)), 4, true)
-    console.log('config', config)
+    this.initGame()
+  },
+  watch: {
+    lists: function (newVal, oldVal) {
+      console.log('南瓜重量数组发生变化！', newVal, oldVal)
+    }
   },
   methods: {
-    start (level) {
-      this.gameStart(level)
-    },
     gameOver () {
+      console.log('%c 南瓜掉落次数', 'color: red', this.times)
       this.duration = 0
       this.$emit('gameOver', {
         weight: this.weight,
         counts: [...this.counts],
-        endStatus: {...this.endStatus}
+        endStatus: this.endStatus
       })
       console.log('南瓜总个数', this.tatal)
-      // 切换背景
-      // let bgIndex = getRandom(0, 1)
-      // this.background = config.backgrounds[bgIndex]
+      // 游戏结束后重新初始化游戏
+      setTimeout(_ => {
+        this.initGame()
+        // 切换背景
+        let bgIndex = getRandom(0, 1)
+        this.background = config.backgrounds[bgIndex]
+      }, 1000)
+    },
+    initGame () {
+      // 初始化游戏状态
+      this.isFirst = true
+      this.duration = config.duration
+      this.weight = 0
+      this.counts = [0, 0, 0, 0, 0]
+      this.endStatus = 0
+      // 初始界面需要有两个南瓜
+      this.pumpkinWeights = this.initWeight()
+      this.pumpkins = this.addNewPumpkins(this.pumpkinWeights.splice(0, getRandom(2, 3)), 4, true)
     },
     /**
      * 启动游戏
      * @param {level} value 游戏难度 0-简单 1-中等 2-困难 3-最难 默认中等难度
      */
     gameStart (level) {
+      this.times = 0
+      this.status = true
       let difficulty = level !== undefined ? level : config.difficulty
       let speed = config.speed[difficulty]
       let gapTime = config.gapTime[difficulty]
-      console.log('====', speed, gapTime)
-      // 初始化游戏状态
-      this.status = true
-      this.duration = config.duration
       this.gapT = gapTime
-      this.weight = 0
-      this.counts = [0, 0, 0, 0, 0]
-      this.endStatus = {}
-      this.pumpkins = this.isFirst ? this.pumpkins : []
-      this.produceTroubleTimes = troublemaker(difficulty - 1)
+      console.log('====', speed, gapTime)
+      this.produceTroubleTimes = troublemaker(difficulty)
       this.produceTroubleTime = this.produceTroubleTimes.shift()
       // 最大掉落南瓜次数
       let maxVal = Math.floor((config.duration / 1000 - 2) / (gapTime / 1000))
       clearInterval(this.timer)
       let intervaTime = 20
       // 初始化南瓜重量
-      let pumpkinWeights = this.isFirst ? [...this.pumpkinWeights] : this.initWeight()
+      let pumpkinWeights = [...this.pumpkinWeights]
       this.isFirst = false
       this.timer = setInterval(() => {
         // 是否添加捣蛋鬼
@@ -143,24 +147,18 @@ export default {
             let left = leftLoc[['right', 'left'].indexOf(category.direction)]
             let speed = [-1, 1][['left', 'right'].indexOf(category.direction)] * getRandom(1, 3)
             let direction = getRandom(0, 1) === 0 ? 'up' : 'down'
-            let rotate = category.en === 'bat'
-              ? category.direction === 'left'
-                ? direction === 'up'
-                  ? 135
-                  : 45
-                : direction === 'up'
-                  ? -135
-                  : -45
-              : 0
-            newTrobles = [...newTrobles, {
+            let troble = {
               status: true,
               category: category,
               left: left,
               top: getRandom(config.top, this.height - config.bottom),
-              rotate: rotate,
+              rotate: 0,
               speed: speed,
+              speedV: getRandom(1, 2),
               direction: direction
-            }]
+            }
+            troble.rotate = rotateDeg(troble)
+            newTrobles = [...newTrobles, troble]
           }
           this.pumpkins.push(...newTrobles)
           if (this.produceTroubleTimes.length > 0) {
@@ -172,6 +170,7 @@ export default {
         // 添加南瓜
         this.gapT -= intervaTime
         if (this.gapT <= 0 && this.duration > 1000) {
+          this.times++
           let loc = 0
           let dropNum = 0
           if (maxVal < Math.ceil(pumpkinWeights.length / 2)) {
@@ -198,21 +197,18 @@ export default {
         // 倒计时1分钟
         this.duration -= intervaTime
         if (this.duration < 0) {
-          // this.start()
           console.log('%c 最后剩余的南瓜重量', 'color: red', pumpkinWeights)
           this.status = false
           clearInterval(this.timer)
           // 游戏结束将结果反馈回父组件
-          this.endStatus = {
-            status: 0
-          }
+          this.endStatus = 0
           this.gameOver()
         }
       }, intervaTime)
     },
     initWeight () {
       const rules = [1, 3, 5, 10]
-      let pumpkinNum = this.lists.length <= 4 ? this.lists : weightRules[getRandom(0, (weightRules.length - 1))]
+      let pumpkinNum = this.lists && this.lists.length > 0 ? [...this.lists] : weightRules[getRandom(0, (weightRules.length - 1))]
       let pumpkinWeights = []
       pumpkinNum.forEach((d, i) => {
         if (d > 0) {
@@ -247,22 +243,24 @@ export default {
     game () {
       let index = this.pumpkins.length
       while (index > 0 && index--) {
-        if (this.pumpkins[index].category.type === config.pumpkin) {
-          this.pumpkins[index].top += this.pumpkins[index].speed
-          if (this.pumpkins[index].top > (this.height - config.bottom)) {
-            this.pumpkins[index].status = false
+        let curPumpkin = this.pumpkins[index]
+        if (curPumpkin.status && curPumpkin.category.type === config.pumpkin) {
+          curPumpkin.top += curPumpkin.speed
+          if (curPumpkin.top > (this.height - config.bottom)) {
+            curPumpkin.status = false
           }
-        } else if (this.pumpkins[index].category.type === config.troublemaker) {
-          this.pumpkins[index].left += this.pumpkins[index].speed
-          let top = this.pumpkins[index].top + (this.pumpkins[index].direction === 'up' ? -getRandom(0, 2) : getRandom(0, 2))
+        } else if (curPumpkin.status && curPumpkin.category.type === config.troublemaker) {
+          curPumpkin.left += curPumpkin.speed
+          let top = curPumpkin.top + (curPumpkin.direction === 'up' ? -curPumpkin.speedV : curPumpkin.speedV)
           if (top < config.top) {
-            this.pumpkins[index].direction = 'down'
+            curPumpkin.direction = 'down'
           } else if (top > (this.height - config.bottom)) {
-            this.pumpkins[index].direction = 'up'
+            curPumpkin.direction = 'up'
           }
-          this.pumpkins[index].top = top
-          if ((this.pumpkins[index].category.direction === 'left' && this.pumpkins[index].left < -50) || (this.pumpkins[index].category.direction === 'right' && this.pumpkins[index].left > this.width)) {
-            this.pumpkins[index].status = false
+          curPumpkin.rotate = rotateDeg(curPumpkin)
+          curPumpkin.top = top
+          if ((curPumpkin.category.direction === 'left' && curPumpkin.left < -50) || (curPumpkin.category.direction === 'right' && curPumpkin.left > this.width)) {
+            curPumpkin.status = false
           }
         }
       }
@@ -284,11 +282,8 @@ export default {
       } else {
         this.status = false
         clearInterval(this.timer)
-        // 点击到了捣蛋鬼，游戏结束将结果反馈回父组件
-        this.endStatus = {
-          status: 1,
-          type: p.category.cn
-        }
+        // 点击到了捣蛋鬼，游戏结束将结果反馈回父组件 p.category.cn
+        this.endStatus = ['', '女巫', '幽灵', '蝙蝠'].indexOf(p.category.cn)
         this.gameOver()
         this.pumpkins = this.pumpkins.filter(d => {
           return d.category.type !== config.pumpkin
@@ -316,23 +311,10 @@ export default {
 .halloween-bg2 {
   background-image: url(../assets/img/game/halloween-bg2.png);
 }
-/* todo 测试按钮 */
-.countdown {
-  position: absolute;
-  top: 50px;
-  left: 50%;
-  width: 200px;
-  margin-left: -100px;
-  background: #fff;
-  color: #000;
-  font-size: 20px;
-  height: 30px;
-  line-height: 30px;
-  text-align: center;
-  z-index: 2;
-}
 .round {
   position: absolute;
+  top: 0px;
+  left: 0px;
   width: 65px;
   height: 65px;
   background-size: cover;
@@ -441,27 +423,13 @@ export default {
   width: 45px;
   height: 45px;
 }
-.progress-bar-wrapper {
+.tips-btn {
   position: absolute;
-  bottom: 50px;
-  left: 10%;
-  width: 80%;
-  color: #fff;
-}
-// todo => 测试
-.test-btns {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  height: 30px;
-  button {
-    border: none;
-    border-radius: 10px;
-    background: #fff;
-    color: #000;
-    line-height: 30px;
-    margin: 0 20px;
+  top: 290px;
+  left: 135px;
+  pointer-events: none;
+  img {
+    width: 118px;
   }
 }
 </style>

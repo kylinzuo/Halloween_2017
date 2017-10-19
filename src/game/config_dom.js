@@ -107,9 +107,16 @@ export const config = {
   progressBarL: 200
 }
 // 产生捣蛋鬼时间与数量
-export function troublemaker (difficulty) {
+export function troublemaker (difficulty, gapTime) {
   let diff = difficulty || config.difficulty
-  const interval = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+  let gap = gapTime || 3
+  let interval = []
+  let duration = config.duration / 1000
+  for (let i = 2; i <= duration; i++) {
+    if ((i % gap) === 0) {
+      interval = [...interval, i]
+    }
+  }
   let intervals = []
   interval.reduce((prev, next) => {
     intervals = [...intervals, {
@@ -150,3 +157,30 @@ export const weightRules = [
   [65, 30, 7, 1],
   [50, 15, 15, 3]
 ]
+
+// 计算蝙蝠旋转角度
+export function rotateDeg (troble) {
+  let rotate = 0
+  if (troble.category.direction === 'left') {
+    if (troble.category.en === 'bat') {
+      rotate = troble.direction === 'up'
+        ? 135
+        : 45
+    } else {
+      rotate = troble.direction === 'up'
+        ? 25
+        : -10
+    }
+  } else {
+    if (troble.category.en === 'bat') {
+      rotate = troble.direction === 'up'
+        ? -135
+        : -45
+    } else {
+      rotate = troble.direction === 'up'
+        ? -25
+        : 10
+    }
+  }
+  return rotate
+}
