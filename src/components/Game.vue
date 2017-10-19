@@ -21,6 +21,7 @@
     <div class="tips-btn" v-if="isFirst">
       <img src="../assets/img/game/tips-btn.png" alt="tips-btn">
     </div>
+    <div class="countdown">倒计时：{{countdown}}</div>
   </div>
 </template>
 
@@ -501,5 +502,20 @@ export default {
   img {
     width: 118px;
   }
+}
+/* todo 测试按钮 */
+.countdown {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  width: 200px;
+  margin-left: -100px;
+  background: #fff;
+  color: #000;
+  font-size: 20px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  z-index: 2;
 }
 </style>

@@ -58,21 +58,6 @@ export default {
   width: 100%;
   height: 100%;
 }
-/* todo 测试按钮 */
-.countdown {
-  position: absolute;
-  top: 50px;
-  left: 50%;
-  width: 200px;
-  margin-left: -100px;
-  background: #fff;
-  color: #000;
-  font-size: 20px;
-  height: 30px;
-  line-height: 30px;
-  text-align: center;
-  z-index: 2;
-}
 .progress-bar-wrapper {
   position: absolute;
   bottom: 50px;
