@@ -260,7 +260,7 @@ export default {
       }
       console.log('initWeightArr ===>>', initWeightArr, tempArr, pumpkinNum)
       let pumpkinWeights = []
-      pumpkinNum.forEach((d, i) => {
+      tempArr.forEach((d, i) => {
         if (d > 0) {
           for (let j = 0; j < d; j++) {
             pumpkinWeights = [...pumpkinWeights, rules[i]]
@@ -270,8 +270,35 @@ export default {
       pumpkinWeights.sort(_ => {
         return 0.5 - Math.random()
       })
+      let tempCount = 0
+      for (let i = 0; i < 3; i++) {
+        if (tempCount < pumpkinWeights.length) {
+          for (let j = initWeightArr.length - 1; j >= 0 && tempCount < pumpkinWeights.length; j--) {
+            if (i === 0 && initWeightArr[j].length === 0) {
+              initWeightArr[j].push(pumpkinWeights[tempCount])
+            } else if (i === 1 && initWeightArr[j].length <= 1) {
+              initWeightArr[j].push(pumpkinWeights[tempCount])
+            } else if (i === 2) {
+              initWeightArr[j].push(pumpkinWeights[tempCount])
+            } else {
+              continue
+            }
+            tempCount++
+          }
+        } else {
+          break
+        }
+      }
       console.log('pumpkinNum', pumpkinNum)
       console.log('pumpkinWeights', pumpkinWeights)
+      console.log('initWeightArr', initWeightArr)
+      let aa = 0
+      initWeightArr.forEach(d => {
+        d.forEach(b => {
+          aa += b
+        })
+      })
+      console.log('%c 总重量为：', 'color:red', aa)
       return pumpkinWeights
     },
     addNewPumpkins (newPumpkinWeight, speed, isFirst) {
