@@ -118,7 +118,10 @@ export default {
       this.endStatus = 0
       // 初始界面需要有两个南瓜
       this.pumpkinWeights = this.initWeight()
-      this.pumpkins = this.addNewPumpkins(this.pumpkinWeights.splice(0, getRandom(2, 3)), 3, true)
+      let newPumpkins = this.pumpkinWeights.splice(0, 1)[0]
+      this.pumpkins = newPumpkins.length <= 1
+        ? this.addNewPumpkins([...newPumpkins, 0], 3, true)
+        : this.addNewPumpkins(newPumpkins, 3, true)
     },
     /**
      * 启动游戏
@@ -139,8 +142,6 @@ export default {
       console.log('====', speed, gapTime)
       this.produceTroubleTimes = troublemaker(difficulty)
       this.produceTroubleTime = this.produceTroubleTimes.shift()
-      // 最大掉落南瓜次数
-      let maxVal = Math.floor((config.duration / 1000 - 2) / (gapTime / 1000))
       clearInterval(this.timer)
       let intervaTime = 20
       // 初始化南瓜重量
@@ -181,20 +182,12 @@ export default {
         this.gapT -= intervaTime
         if (this.gapT <= 0 && this.duration > 1000) {
           this.times++
-          let loc = 0
-          let dropNum = 0
-          if (maxVal < Math.ceil(pumpkinWeights.length / 2)) {
-            loc = 3
-            dropNum = 2 // getRandom(0, 1)
-          } else if (maxVal < pumpkinWeights.length) {
-            loc = 2
-            dropNum = 3 // getRandom(0, 2)
-          } else {
-            loc = 1
-            dropNum = 4 // getRandom(0, 3)
-          }
-          --maxVal
-          let newPumpkinWeight = pumpkinWeights.splice(0, loc)
+          let newPumpkinWeight = pumpkinWeights.length > 0
+            ? pumpkinWeights.splice(0, 1)[0]
+            : []
+          let dropNum = this.level > 1
+            ? 4 - newPumpkinWeight.length
+            : 5 - newPumpkinWeight.length
           for (var i = 0; i < dropNum; i++) {
             newPumpkinWeight.push(0)
           }
@@ -299,7 +292,7 @@ export default {
         })
       })
       console.log('%c 总重量为：', 'color:red', aa)
-      return pumpkinWeights
+      return initWeightArr
     },
     addNewPumpkins (newPumpkinWeight, speed, isFirst) {
       let newPumpkins = []

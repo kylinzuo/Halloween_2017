@@ -22,7 +22,7 @@ export default {
       lists: [...weightRules[getRandom(0, (weightRules.length - 1))]],
       countdown: 0,
       weight: 0,
-      btns: ['速度1', '速度2', '速度3', '速度4'],
+      btns: ['开始'],
       level: 0
     }
   },
@@ -32,13 +32,14 @@ export default {
   methods: {
     start (level) {
       console.log('level', level)
-      this.level = level
+      // this.level = level
       this.weight = 0
       this.$refs.game.gameStart()
     },
     gameOver (data) {
       // let status = ['时间到，', '碰到女巫，', '碰到幽灵，', '碰到蝙蝠，']
       console.log('游戏结束', data)
+      this.level = getRandom(0, 3)
       this.lists = [...weightRules[getRandom(0, (weightRules.length - 1))]]
       // alert(status[data.endStatus] + '游戏结束!' + '获得重量' + data.weight + 'g')
     },
