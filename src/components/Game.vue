@@ -21,7 +21,7 @@
     <div class="tips-btn" v-if="isFirst">
       <img src="../assets/img/game/tips-btn.png" alt="tips-btn">
     </div>
-    <div class="countdown">倒计时：{{countdown}}</div>
+    <!-- <div class="countdown">倒计时：{{countdown}}</div> -->
   </div>
 </template>
 
@@ -49,6 +49,7 @@ export default {
     return {
       background: config.backgrounds[0],
       isFirst: true,
+      selfLevel: config.difficulty,
       width: 0,
       height: 0,
       timer: null,
@@ -117,6 +118,7 @@ export default {
       this.weight = 0
       this.counts = [0, 0, 0, 0, 0]
       this.endStatus = 0
+      this.selfLevel = this.level >= 0 && this.level <= 3 ? this.level : config.difficulty
       // 初始界面需要有两个南瓜
       this.pumpkinWeights = this.initWeight()
       let newPumpkins = this.pumpkinWeights.splice(0, 1)[0]
@@ -136,7 +138,7 @@ export default {
     start () {
       this.times = 0
       this.status = true
-      let difficulty = this.level !== undefined ? this.level : config.difficulty
+      let difficulty = this.selfLevel
       let speed = config.speed[difficulty]
       let gapTime = config.gapTime[difficulty]
       this.gapT = gapTime
@@ -150,9 +152,8 @@ export default {
       this.isFirst = false
       this.timer = setInterval(() => {
         // 是否添加捣蛋鬼
-        let condition = config.duration - this.duration === this.produceTroubleTime.time
+        let condition = (config.duration - this.duration) === this.produceTroubleTime.time
         if (condition) {
-          console.log('condition', condition, config.duration, this.duration, this.produceTroubleTime.time)
           let newTrobles = []
           for (let i = 0; i < this.produceTroubleTime.num; i++) {
             let category = {...config.troublemakers[getRandom(0, 7)]}
@@ -175,9 +176,7 @@ export default {
             newTrobles = [...newTrobles, troble]
           }
           this.pumpkins.push(...newTrobles)
-          console.log('-----------------------')
           if (this.produceTroubleTimes.length > 0) {
-            console.log('=======================')
             this.produceTroubleTime = this.produceTroubleTimes.shift()
           }
         }
@@ -190,7 +189,7 @@ export default {
           let newPumpkinWeight = pumpkinWeights.length > 0
             ? pumpkinWeights.splice(0, 1)[0]
             : []
-          let dropNum = this.level > 1
+          let dropNum = difficulty > 1
             ? 4 - newPumpkinWeight.length
             : 5 - newPumpkinWeight.length
           for (var i = 0; i < dropNum; i++) {
@@ -216,7 +215,7 @@ export default {
     },
     initWeight () {
       let initWeightArr = []
-      let dropTimes = config.dropTimes[this.level]
+      let dropTimes = config.dropTimes[this.selfLevel]
       console.log('dropTimes', dropTimes)
       for (let i = 0; i < dropTimes; i++) {
         initWeightArr = [...initWeightArr, []]
@@ -400,8 +399,8 @@ export default {
   span {
     pointer-events: none;
     display: block;
-    width: inherit;
-    height: inherit;
+    width: 104px;
+    height: 60px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;

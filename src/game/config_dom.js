@@ -121,12 +121,11 @@ export function troublemaker (difficulty, gapTime) {
   let intervals = []
   interval.reduce((prev, next) => {
     intervals = [...intervals, {
-      time: getRandom(prev, next) * 1000,
+      time: getRandom(prev + 1, next) * 1000,
       num: 3 + diff
     }]
     return next
   })
-  console.log('intervals', intervals)
   return intervals
 }
 
