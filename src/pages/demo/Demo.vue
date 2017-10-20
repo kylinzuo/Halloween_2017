@@ -40,7 +40,7 @@ export default {
       // let status = ['时间到，', '碰到女巫，', '碰到幽灵，', '碰到蝙蝠，']
       console.log('游戏结束', data)
       setTimeout(_ => {
-        this.level = getRandom(0, 3)
+        this.level = getRandom(1, 2)
         this.lists = [...weightRules[getRandom(0, (weightRules.length - 1))]]
       }, 5000)
       // alert(status[data.endStatus] + '游戏结束!' + '获得重量' + data.weight + 'g')
