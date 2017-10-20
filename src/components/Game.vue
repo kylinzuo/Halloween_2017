@@ -21,6 +21,14 @@
     <div class="tips-btn" v-if="isFirst">
       <img src="../assets/img/game/tips-btn.png" alt="tips-btn">
     </div>
+    <div
+      class="oops"
+      :style="{
+        transform: 'translate(' + oops.left + 'px,' + oops.top + 'px)'
+      }"
+    >
+      <img src="../assets/img/game/oops.png" alt="oops">
+    </div>
     <!-- <div class="countdown">倒计时：{{countdown}}</div> -->
   </div>
 </template>
@@ -64,7 +72,11 @@ export default {
       weight: 0,
       counts: [0, 0, 0, 0, 0],
       endStatus: 0, // endStatus 0-正常结束   1-碰到女巫 2-碰到幽灵 3-碰到蝙蝠
-      times: 0
+      times: 0,
+      oops: {
+        left: -10000,
+        top: -10000
+      }
     }
   },
   computed: {
@@ -90,7 +102,7 @@ export default {
   },
   watch: {
     lists: function (newVal, oldVal) {
-      console.log('南瓜重量数组发生变化！', newVal, oldVal)
+      // console.log('南瓜重量数组发生变化！', newVal, oldVal)
       setTimeout(_ => {
         // 初始化游戏
         this.initGame()
@@ -102,17 +114,21 @@ export default {
   },
   methods: {
     gameOver () {
-      console.log('%c 南瓜掉落次数', 'color: red', this.times)
+      // console.log('%c 南瓜掉落次数', 'color: red', this.times)
       this.duration = 0
       this.$emit('gameOver', {
         weight: this.weight,
         counts: [...this.counts],
         endStatus: this.endStatus
       })
-      console.log('南瓜总个数', this.tatal)
+      // console.log('南瓜总个数', this.tatal)
     },
     initGame () {
       // 初始化游戏状态
+      this.oops = {
+        left: -10000,
+        top: -10000
+      }
       this.isFirst = true
       this.duration = config.duration
       this.weight = 0
@@ -142,7 +158,7 @@ export default {
       let speed = config.speed[difficulty]
       let gapTime = config.gapTime[difficulty]
       this.gapT = gapTime
-      console.log('====', speed, gapTime)
+      // console.log('====', speed, gapTime)
       this.produceTroubleTimes = troublemaker(difficulty)
       this.produceTroubleTime = this.produceTroubleTimes.shift()
       clearInterval(this.timer)
@@ -204,7 +220,7 @@ export default {
         // 倒计时1分钟
         this.duration -= intervaTime
         if (this.duration < 0) {
-          console.log('%c 最后剩余的南瓜重量', 'color: red', pumpkinWeights)
+          // console.log('%c 最后剩余的南瓜重量', 'color: red', pumpkinWeights)
           this.status = false
           clearInterval(this.timer)
           // 游戏结束将结果反馈回父组件
@@ -216,7 +232,7 @@ export default {
     initWeight () {
       let initWeightArr = []
       let dropTimes = config.dropTimes[this.selfLevel]
-      console.log('dropTimes', dropTimes)
+      // console.log('dropTimes', dropTimes)
       for (let i = 0; i < dropTimes; i++) {
         initWeightArr = [...initWeightArr, []]
       }
@@ -224,7 +240,7 @@ export default {
       let pumpkinNum = this.lists && this.lists.length > 0 ? [...this.lists] : weightRules[getRandom(0, (weightRules.length - 1))]
       let tempArr = []
       for (let n = pumpkinNum.length - 1; n >= 0; n--) {
-        console.log('pumpkinNum[n]', pumpkinNum[n])
+        // console.log('pumpkinNum[n]', pumpkinNum[n])
         if (n >= 2 && pumpkinNum[n] !== 0) {
           let gap = Math.ceil(dropTimes / pumpkinNum[n])
           let randomGap = getRandom(0, gap)
@@ -255,7 +271,7 @@ export default {
           tempArr = [pumpkinNum[n], ...tempArr]
         }
       }
-      console.log('initWeightArr ===>>', initWeightArr, tempArr, pumpkinNum)
+      // console.log('initWeightArr ===>>', initWeightArr, tempArr, pumpkinNum)
       let pumpkinWeights = []
       tempArr.forEach((d, i) => {
         if (d > 0) {
@@ -286,16 +302,16 @@ export default {
           break
         }
       }
-      console.log('pumpkinNum', pumpkinNum)
-      console.log('pumpkinWeights', pumpkinWeights)
-      console.log('initWeightArr', initWeightArr)
-      let aa = 0
-      initWeightArr.forEach(d => {
-        d.forEach(b => {
-          aa += b
-        })
-      })
-      console.log('%c 总重量为：', 'color:red', aa)
+      // console.log('pumpkinNum', pumpkinNum)
+      // console.log('pumpkinWeights', pumpkinWeights)
+      // console.log('initWeightArr', initWeightArr)
+      // let aa = 0
+      // initWeightArr.forEach(d => {
+      //   d.forEach(b => {
+      //     aa += b
+      //   })
+      // })
+      // console.log('%c 总重量为：', 'color:red', aa)
       return initWeightArr
     },
     addNewPumpkins (newPumpkinWeight, speed, isFirst) {
@@ -340,7 +356,7 @@ export default {
       }
     },
     gainPumpkin (p, index) {
-      console.log(p, index)
+      // console.log(p, index)
       if (!this.status && !this.pumpkins[index].show) return
       if (p.category.type === config.pumpkin) {
         this.weight += p.weight
@@ -356,6 +372,10 @@ export default {
       } else {
         this.status = false
         clearInterval(this.timer)
+        this.oops = {
+          left: p.left - 15,
+          top: p.top - 5
+        }
         // 点击到了捣蛋鬼，游戏结束将结果反馈回父组件 p.category.cn
         this.endStatus = ['', '女巫', '幽灵', '蝙蝠'].indexOf(p.category.cn)
         this.gameOver()
@@ -396,11 +416,18 @@ export default {
   background-position: center;
   border-radius: 50%;
   z-index: 10;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility:hidden;
+  -webkit-perspective:1000;
   span {
     pointer-events: none;
     display: block;
-    width: 104px;
-    height: 60px;
+    width: 80px;
+    height: inherit;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -424,26 +451,31 @@ export default {
   width: 100px;
 }
 .pumpkin0g-score {
+  z-index: 25;
   span {
     background-image: url(../assets/img/game/weight0g.png);
   }
 }
 .pumpkin1g-score {
+  z-index: 25;
   span {
     background-image: url(../assets/img/game/weight1g.png);
   }
 }
 .pumpkin3g-score {
+  z-index: 25;
   span {
     background-image: url(../assets/img/game/weight3g.png);
   }
 }
 .pumpkin5g-score {
+  z-index: 25;
   span {
     background-image: url(../assets/img/game/weight5g.png);
   }
 }
 .pumpkin10g-score {
+  z-index: 25;
   span {
     background-image: url(../assets/img/game/weight10g.png);
   }
@@ -504,6 +536,16 @@ export default {
   pointer-events: none;
   img {
     width: 118px;
+  }
+}
+.oops {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 30;
+  img {
+    width: 130px;
+    height: auto;
   }
 }
 /* todo 测试按钮 */

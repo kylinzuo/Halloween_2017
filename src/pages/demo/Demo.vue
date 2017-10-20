@@ -6,7 +6,7 @@
       获得南瓜重量：{{weight}}g
     </div>
     <div class='test-btns'>
-      <button v-for="(btn, index) in btns" @click="start(index)" :key="index">{{btn}}</button>
+      <button v-for="(btn, index) in btns" @touchstart="start(index)" :key="index">{{btn}}</button>
     </div>
   </div>
 </template>
@@ -39,8 +39,10 @@ export default {
     gameOver (data) {
       // let status = ['时间到，', '碰到女巫，', '碰到幽灵，', '碰到蝙蝠，']
       console.log('游戏结束', data)
-      this.level = getRandom(0, 3)
-      this.lists = [...weightRules[getRandom(0, (weightRules.length - 1))]]
+      setTimeout(_ => {
+        this.level = getRandom(0, 3)
+        this.lists = [...weightRules[getRandom(0, (weightRules.length - 1))]]
+      }, 5000)
       // alert(status[data.endStatus] + '游戏结束!' + '获得重量' + data.weight + 'g')
     },
     updateWeight (weight) {
