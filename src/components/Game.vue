@@ -2,9 +2,12 @@
   <div
     class="game"
     ref="game"
-    :class="[background]"
     @touchmove.prevent
   >
+    <div
+      class="bg-wrapper"
+      :class="[background, {disappear: toggleBg}]"
+    ></div>
     <div
       v-for="(pumpkin, index) in pumpkins"
       :key="index"
@@ -18,7 +21,7 @@
     >
       <span :style="{opacity: pumpkin.show ? 1 : 0}"></span>
     </div>
-    <div class="tips-btn" v-if="isFirst">
+    <div class="tips-btn" v-if="isFirst && !status">
       <img src="../assets/img/game/tips-btn.png" alt="tips-btn">
     </div>
     <div
@@ -55,6 +58,7 @@ export default {
   },
   data () {
     return {
+      toggleBg: false,
       background: config.backgrounds[0],
       isFirst: true,
       selfLevel: config.difficulty,
@@ -103,13 +107,17 @@ export default {
   watch: {
     lists: function (newVal, oldVal) {
       // console.log('南瓜重量数组发生变化！', newVal, oldVal)
+      this.toggleBg = true
       setTimeout(_ => {
         // 初始化游戏
         this.initGame()
+      }, 100)
+      setTimeout(_ => {
         // 切换背景
         let bgIndex = getRandom(0, 1)
         this.background = config.backgrounds[bgIndex]
-      }, 100)
+        this.toggleBg = false
+      }, 2000)
     }
   },
   methods: {
@@ -205,9 +213,7 @@ export default {
           let newPumpkinWeight = pumpkinWeights.length > 0
             ? pumpkinWeights.splice(0, 1)[0]
             : []
-          let dropNum = difficulty > 1
-            ? 4 - newPumpkinWeight.length
-            : 5 - newPumpkinWeight.length
+          let dropNum = getRandom(0, 4 - newPumpkinWeight.length)
           for (var i = 0; i < dropNum; i++) {
             newPumpkinWeight.push(0)
           }
@@ -392,18 +398,38 @@ export default {
 <style lang="less" scoped>
 .game {
   position: relative;
-  background-size: cover;
-  background-repeat: no-repeat;
   width: 100%;
   height: 100%;
   overflow: hidden;
   z-index: 1;
 }
+.bg-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100%;
+}
 .halloween-bg1 {
+  animation: show 2s linear;
   background-image: url(../assets/img/game/halloween-bg1.png);
 }
 .halloween-bg2 {
+  animation: show 2s linear;
   background-image: url(../assets/img/game/halloween-bg2.png);
+}
+.disappear {
+  animation: hide 2s linear;
+}
+@keyframes hide {
+  from {opacity: 1;}
+  to {opacity: 0.3;}
+}
+@keyframes show {
+  from {opacity: 0.3;}
+  to {opacity: 1;}
 }
 .round {
   position: absolute;
