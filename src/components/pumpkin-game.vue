@@ -59,7 +59,7 @@ export default {
   data () {
     return {
       toggleBg: false,
-      background: config.backgrounds[0],
+      background: 'halloween-bg0 ',
       isFirst: true,
       selfLevel: config.difficulty,
       width: 0,
@@ -117,7 +117,7 @@ export default {
         let bgIndex = getRandom(0, 1)
         this.background = config.backgrounds[bgIndex]
         this.toggleBg = false
-      }, 2000)
+      }, 500)
     }
   },
   methods: {
@@ -412,23 +412,26 @@ export default {
   width: 100%;
   height: 100%;
 }
+.halloween-bg0 {
+  background-image: url(../assets/img/game/halloween-bg1.png);
+}
 .halloween-bg1 {
-  animation: show 2s linear;
+  animation: show 0.5s linear;
   background-image: url(../assets/img/game/halloween-bg1.png);
 }
 .halloween-bg2 {
-  animation: show 2s linear;
+  animation: show 0.5s linear;
   background-image: url(../assets/img/game/halloween-bg2.png);
 }
 .disappear {
-  animation: hide 2s linear;
+  animation: hide 0.5s linear;
 }
 @keyframes hide {
   from {opacity: 1;}
-  to {opacity: 0.3;}
+  to {opacity: 0.5;}
 }
 @keyframes show {
-  from {opacity: 0.3;}
+  from {opacity: 0.5;}
   to {opacity: 1;}
 }
 .round {

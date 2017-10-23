@@ -1,6 +1,6 @@
 <template>
   <div class="demo">
-    <Game ref='game' :lists="lists" :level="level" @updateWeight="updateWeight" @gameOver="gameOver"></Game>
+    <pumpkinGame ref='game' :lists="lists" :level="level" @updateWeight="updateWeight" @gameOver="gameOver"></pumpkinGame>
     <!-- <div class="countdown">倒计时：{{countdown}}</div> -->
     <div class="progress-bar-wrapper">
       获得南瓜重量：{{weight}}g
@@ -13,7 +13,7 @@
 
 <script>
 import { getRandom, weightRules } from '@/game/config_dom.js'
-import Game from '@/components/Game'
+import pumpkinGame from '@/components/pumpkin-game'
 export default {
   name: 'demo',
   data () {
@@ -27,7 +27,7 @@ export default {
     }
   },
   components: {
-    Game
+    pumpkinGame
   },
   methods: {
     start (level) {
