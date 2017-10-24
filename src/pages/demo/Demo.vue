@@ -6,7 +6,7 @@
       获得南瓜重量：{{weight}}g
     </div>
     <div class='test-btns'>
-      <button v-for="(btn, index) in btns" @touchstart="start(index)" :key="index">{{btn}}</button>
+      <button v-for="(btn, index) in btns" @click="start(index)" :key="index">{{btn}}</button>
     </div>
   </div>
 </template>

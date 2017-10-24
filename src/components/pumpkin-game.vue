@@ -5,8 +5,12 @@
     @touchmove.prevent
   >
     <div
-      class="bg-wrapper"
-      :class="[background, {disappear: toggleBg}]"
+      class="bg-wrapper halloween-bg1"
+      v-show="background === 'halloween-bg1' ? true : false"
+    ></div>
+    <div
+      class="bg-wrapper halloween-bg2"
+      v-show="background === 'halloween-bg2' ? true : false"
     ></div>
     <div
       v-for="(pumpkin, index) in pumpkins"
@@ -17,10 +21,23 @@
       :style="{
         transform: 'translate(' + pumpkin.left + 'px,' + pumpkin.top + 'px)' + 'rotate(' + pumpkin.rotate + 'deg)'
       }"
-      @click="gainPumpkin(pumpkin, index)"
+      @touchstart="gainPumpkin(pumpkin, index)"
     >
-      <span :style="{opacity: pumpkin.show ? 1 : 0}"></span>
     </div>
+    <transition-group name="fade">
+      <div
+        v-for="(score, index) in scores"
+        :key="'score-' + index"
+        v-if="score.show"
+        class="round"
+        :class="[score.category.en]"
+        :style="{
+          transform: 'translate(' + score.left + 'px,' + score.top + 'px)'
+        }"
+      >
+        <span></span>
+      </div>
+    </transition-group>
     <div class="tips-btn" v-if="isFirst && !status">
       <img src="../assets/img/game/tips-btn.png" alt="tips-btn">
     </div>
@@ -43,9 +60,11 @@
  * @param {@} updateWeight 自定义事件 => 实现反馈获得的南瓜重量
  * @param {@} gameOver 自定义事件 => endStatus 0-正常结束   1-碰到女巫 2-碰到幽灵 3-碰到蝙蝠
  */
-import { getRandom, config, troublemaker, weightRules, rotateDeg } from '@/game/config_dom.js'
+import { getRandom, config, troublemaker, weightRules, rotateDeg, imagePreloader } from '@/game/config_dom.js'
+let bgImage1 = require('../assets/img/game/halloween-bg1.jpg')
+let bgImage2 = require('../assets/img/game/halloween-bg2.jpg')
 export default {
-  name: 'game',
+  name: 'pumpkin-game',
   props: {
     lists: {
       type: Array,
@@ -59,7 +78,7 @@ export default {
   data () {
     return {
       toggleBg: false,
-      background: 'halloween-bg0 ',
+      background: 'halloween-bg1',
       isFirst: true,
       selfLevel: config.difficulty,
       width: 0,
@@ -81,7 +100,8 @@ export default {
         left: -10000,
         top: -10000
       },
-      timeStamp: 0
+      timeStamp: 0,
+      scores: []
     }
   },
   computed: {
@@ -99,6 +119,9 @@ export default {
       return (ratio * 100).toFixed(2) + '%'
     }
   },
+  created () {
+    imagePreloader([bgImage1, bgImage2])
+  },
   mounted () {
     let wrapper = this.$refs.game
     this.width = wrapper.offsetWidth
@@ -107,12 +130,13 @@ export default {
   },
   watch: {
     lists: function (newVal, oldVal) {
-      // console.log('南瓜重量数组发生变化！', newVal, oldVal)
-      this.toggleBg = true
       setTimeout(_ => {
         // 初始化游戏
         this.initGame()
       }, 100)
+      this.total++
+      if (this.total <= 1) return
+      this.toggleBg = true
       setTimeout(_ => {
         // 切换背景
         let bgIndex = getRandom(0, 1)
@@ -123,7 +147,6 @@ export default {
   },
   methods: {
     gameOver () {
-      alert('%c 游戏耗时：' + ((new Date()).getTime() - this.timeStamp))
       // console.log('%c 南瓜掉落次数', 'color: red', this.times)
       this.duration = 0
       this.$emit('gameOver', {
@@ -226,7 +249,7 @@ export default {
         // 倒计时1分钟
         this.duration -= intervaTime
         let gameTime = (new Date()).getTime() - this.timeStamp
-        if (this.duration <= 0 || gameTime > config.duration) {
+        if (this.duration < 0 || gameTime > config.duration) {
           // console.log('%c 最后剩余的南瓜重量', 'color: red', pumpkinWeights)
           this.status = false
           clearInterval(this.timer)
@@ -311,7 +334,7 @@ export default {
       }
       // console.log('pumpkinNum', pumpkinNum)
       // console.log('pumpkinWeights', pumpkinWeights)
-      console.log('initWeightArr', initWeightArr)
+      // console.log('initWeightArr', initWeightArr)
       // let aa = 0
       // initWeightArr.forEach(d => {
       //   d.forEach(b => {
@@ -369,9 +392,11 @@ export default {
         this.weight += p.weight
         this.pumpkins[index].show = true
         this.pumpkins[index].category.en = this.pumpkins[index].category.score
+        let deletePumpkin = this.pumpkins.splice(index, 1)[0]
+        this.scores.push({...deletePumpkin})
         setTimeout(_ => {
-          this.pumpkins.splice(index, 1)
-        }, 100)
+          this.scores.shift()
+        }, 50)
         // 新获得的重量上传
         this.$emit('updateWeight', p.weight)
         // 添加用户点击统计数据
@@ -412,28 +437,13 @@ export default {
   background-repeat: no-repeat;
   width: 100%;
   height: 100%;
-}
-.halloween-bg0 {
-  background-image: url(../assets/img/game/halloween-bg1.png);
+  z-index: 1;
 }
 .halloween-bg1 {
-  animation: show 0.5s linear;
-  background-image: url(../assets/img/game/halloween-bg1.png);
+  background-image: url(../assets/img/game/halloween-bg1.jpg);
 }
 .halloween-bg2 {
-  animation: show 0.5s linear;
-  background-image: url(../assets/img/game/halloween-bg2.png);
-}
-.disappear {
-  animation: hide 0.5s linear;
-}
-@keyframes hide {
-  from {opacity: 1;}
-  to {opacity: 0.5;}
-}
-@keyframes show {
-  from {opacity: 0.5;}
-  to {opacity: 1;}
+  background-image: url(../assets/img/game/halloween-bg2.jpg);
 }
 .round {
   position: absolute;
@@ -480,32 +490,38 @@ export default {
   background-image: url(../assets/img/game/pumpkin10g.png);
   width: 100px;
 }
+.fade-leave-active {
+  transition: all 0.5s;
+}
+.fade-leave-to {
+  opacity: 0;
+}
 .pumpkin0g-score {
-  z-index: 25;
+  z-index: 5;
   span {
     background-image: url(../assets/img/game/weight0g.png);
   }
 }
 .pumpkin1g-score {
-  z-index: 25;
+  z-index: 5;
   span {
     background-image: url(../assets/img/game/weight1g.png);
   }
 }
 .pumpkin3g-score {
-  z-index: 25;
+  z-index: 5;
   span {
     background-image: url(../assets/img/game/weight3g.png);
   }
 }
 .pumpkin5g-score {
-  z-index: 25;
+  z-index: 5;
   span {
     background-image: url(../assets/img/game/weight5g.png);
   }
 }
 .pumpkin10g-score {
-  z-index: 25;
+  z-index: 5;
   span {
     background-image: url(../assets/img/game/weight10g.png);
   }
@@ -561,9 +577,12 @@ export default {
 }
 .tips-btn {
   position: absolute;
-  top: 290px;
-  left: 135px;
+  top: 50%;
+  left: 50%;
+  margin-left: -59px;
+  margin-top: -26px;
   pointer-events: none;
+  z-index: 10;
   img {
     width: 118px;
   }

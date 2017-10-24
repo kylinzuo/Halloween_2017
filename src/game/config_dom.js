@@ -185,3 +185,11 @@ export function rotateDeg (troble) {
   }
   return rotate
 }
+
+// 预加载图片
+export function imagePreloader (images) {
+  for (let i = 0; i < images.length; i++) {
+    let oImg = new Image()
+    oImg.src = images[i]
+  }
+}
