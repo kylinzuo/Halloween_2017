@@ -1,6 +1,7 @@
 /**
  * 万圣节活动收获南瓜游戏
  */
+import { ImagePreloader } from './utils'
 let bgImgurl0 = require('../assets/img/game/halloween-bg1.png')
 export default function Halloween (El, config) {
   console.log('开始绘制图形')
@@ -15,6 +16,11 @@ export default function Halloween (El, config) {
     return null
   }
   // 加载图片
+  let imgsLists = [bgImgurl0]
+  function imagesLoaded (imgs, imgsNum) {
+    console.log(imgs, imgsNum)
+  }
+  this.preloaderImages = new ImagePreloader(imgsLists, imagesLoaded)
   let bgImg1 = new Image()
   bgImg1.src = bgImgurl0
   // 绘制图形

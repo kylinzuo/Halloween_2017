@@ -5,18 +5,18 @@ export function ImagePreloader (images, callback) {
   // initialize internal state.
   this.nLoaded = 0
   this.nProcessed = 0
-  this.aImages = new Array()
+  this.aImages = []
   // record the number of images.
   this.nImages = images.length
   // for each image, call preload()
-  for ( var i = 0; i < images.length; i++ ) {
-    this.preload(images[i]);
+  for (let i = 0; i < images.length; i++) {
+    this.preload(images[i])
   }
 }
 
 ImagePreloader.prototype.preload = function (image) {
   // create new Image object and add to array
-  var oImage = new Image
+  var oImage = new Image()
   this.aImages.push(oImage)
   // set up event handlers for the Image object
   oImage.onload = ImagePreloader.prototype.onload
@@ -29,11 +29,9 @@ ImagePreloader.prototype.preload = function (image) {
   oImage.src = image
 }
 
-ImagePreloader.prototype.onComplete = function ()
-
-{
-  this.nProcessed++;
-  if ( this.nProcessed == this.nImages ) {
+ImagePreloader.prototype.onComplete = function () {
+  this.nProcessed++
+  if (this.nProcessed === this.nImages) {
     this.callback(this.aImages, this.nLoaded)
   }
 }
