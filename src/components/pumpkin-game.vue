@@ -72,7 +72,7 @@ export default {
       pumpkinWeights: [],
       produceTroubleTimes: [],
       produceTroubleTime: 0,
-      tatal: 0,
+      total: 0,
       weight: 0,
       counts: [0, 0, 0, 0, 0],
       endStatus: 0, // endStatus 0-正常结束   1-碰到女巫 2-碰到幽灵 3-碰到蝙蝠
@@ -80,7 +80,8 @@ export default {
       oops: {
         left: -10000,
         top: -10000
-      }
+      },
+      timeStamp: 0
     }
   },
   computed: {
@@ -122,6 +123,7 @@ export default {
   },
   methods: {
     gameOver () {
+      alert('%c 游戏耗时：' + ((new Date()).getTime() - this.timeStamp))
       // console.log('%c 南瓜掉落次数', 'color: red', this.times)
       this.duration = 0
       this.$emit('gameOver', {
@@ -129,7 +131,6 @@ export default {
         counts: [...this.counts],
         endStatus: this.endStatus
       })
-      // console.log('南瓜总个数', this.tatal)
     },
     initGame () {
       // 初始化游戏状态
@@ -156,6 +157,7 @@ export default {
      */
     gameStart () {
       setTimeout(_ => {
+        this.timeStamp = (new Date()).getTime()
         this.start()
       }, 100)
     },
@@ -217,15 +219,14 @@ export default {
           for (var i = 0; i < dropNum; i++) {
             newPumpkinWeight.push(0)
           }
-          this.tatal += newPumpkinWeight.length
-          // console.log('this.tatal', this.tatal)
           let newPumpkins = this.addNewPumpkins(newPumpkinWeight, speed)
           this.pumpkins.push(...newPumpkins)
           this.gapT = gapTime
         }
         // 倒计时1分钟
         this.duration -= intervaTime
-        if (this.duration < 0) {
+        let gameTime = (new Date()).getTime() - this.timeStamp
+        if (this.duration <= 0 || gameTime > config.duration) {
           // console.log('%c 最后剩余的南瓜重量', 'color: red', pumpkinWeights)
           this.status = false
           clearInterval(this.timer)
@@ -310,7 +311,7 @@ export default {
       }
       // console.log('pumpkinNum', pumpkinNum)
       // console.log('pumpkinWeights', pumpkinWeights)
-      // console.log('initWeightArr', initWeightArr)
+      console.log('initWeightArr', initWeightArr)
       // let aa = 0
       // initWeightArr.forEach(d => {
       //   d.forEach(b => {
