@@ -2,6 +2,7 @@
   <div
     class="game"
     ref="game"
+    @touchstart.prevent
     @touchmove.prevent
   >
     <div
@@ -19,9 +20,9 @@
       class="round"
       :class="[pumpkin.category.en]"
       :style="{
-        transform: 'translate(' + pumpkin.left + 'px,' + pumpkin.top + 'px)' + 'rotate(' + pumpkin.rotate + 'deg)'
+        transform: 'translate3d(' + pumpkin.left + 'px,' + pumpkin.top + 'px, 0px)' + 'rotateZ(' + pumpkin.rotate + 'deg)'
       }"
-      @touchstart="gainPumpkin(pumpkin, index)"
+      @touchstart.stop.prevent="gainPumpkin(pumpkin, index)"
     >
     </div>
     <transition-group name="fade">
@@ -428,6 +429,7 @@ export default {
   height: 100%;
   overflow: hidden;
   z-index: 1;
+  -webkit-user-select:none;
 }
 .bg-wrapper {
   position: absolute;
@@ -441,6 +443,7 @@ export default {
   touch-action: none;
   pointer-events: none;
   z-index: 1;
+  -webkit-user-select:none;
 }
 .halloween-bg1 {
   background-image: url(../assets/img/game/halloween-bg1.jpg);
@@ -466,6 +469,7 @@ export default {
   transform: translateZ(0);
   -webkit-backface-visibility:hidden;
   -webkit-perspective:1000;
+  -webkit-user-select:none;
   span {
     pointer-events: none;
     display: block;
