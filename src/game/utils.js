@@ -6,6 +6,7 @@ export function ImagePreloader (images, callback) {
   this.nLoaded = 0
   this.nProcessed = 0
   this.aImages = []
+  this.imagesDict = {}
   // record the number of images.
   this.nImages = images.length
   // for each image, call preload()
@@ -18,6 +19,7 @@ ImagePreloader.prototype.preload = function (image) {
   // create new Image object and add to array
   var oImage = new Image()
   this.aImages.push(oImage)
+  this.imagesDict[image.name] = oImage
   // set up event handlers for the Image object
   oImage.onload = ImagePreloader.prototype.onload
   oImage.onerror = ImagePreloader.prototype.onerror
@@ -26,13 +28,13 @@ ImagePreloader.prototype.preload = function (image) {
   oImage.oImagePreloader = this
   oImage.bLoaded = false
   // assign the .src property of the Image object
-  oImage.src = image
+  oImage.src = image.url
 }
 
 ImagePreloader.prototype.onComplete = function () {
   this.nProcessed++
   if (this.nProcessed === this.nImages) {
-    this.callback(this.aImages, this.nLoaded)
+    this.callback(this.aImages, this.imagesDict, this.nLoaded)
   }
 }
 

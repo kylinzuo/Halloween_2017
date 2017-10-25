@@ -4,40 +4,41 @@
 import { ImagePreloader } from './utils'
 let bgImgurl0 = require('../assets/img/game/halloween-bg1.png')
 export default function Halloween (El, config) {
-  console.log('开始绘制图形')
+  console.log('开始生成实例')
   // 设置画布尺寸
-  let size = setCanvasSize(El)
-  console.log('%c size', 'color: red', size)
+  this.size = setCanvasSize(El)
+  console.log('%c size', 'color: red', this.size)
   // 获取画布上下文
-  let ctx = El.getContext('2d')
+  this.ctx = El.getContext('2d')
   // 检测浏览器是否支持canvas
-  if (!ctx) {
+  if (!this.ctx) {
     alert('浏览器版本太低！')
     return null
   }
   // 加载图片
-  let imgsLists = [bgImgurl0]
-  function imagesLoaded (imgs, imgsNum) {
-    console.log(imgs, imgsNum)
-  }
-  this.preloaderImages = new ImagePreloader(imgsLists, imagesLoaded)
-  let bgImg1 = new Image()
-  bgImg1.src = bgImgurl0
+  this.imgsLists = [{
+    name: 'halloween-bg1',
+    url: bgImgurl0
+  }]
+  this.preloaderImages = new ImagePreloader(this.imgsLists, this.imagesLoaded)
+}
+
+Halloween.prototype.imagesLoaded = function (images, imagesDict, loadedNum) {
+  console.log(images, imagesDict, loadedNum)
+}
+
+Halloween.prototype.init = function () {
+
+}
+
+Halloween.prototype.gameStart = function () {
   // 绘制图形
   function draw () {
-    ctx.clearRect(0, 0, size.width, size.height)
-    ctx.drawImage(bgImg1, 0, 0, size.width, size.height)
+    this.ctx.clearRect(0, 0, this.size.width, this.size.height)
+    // this.ctx.drawImage(bgImg1, 0, 0, this.size.width, this.size.height)
+    window.requestAnimationFrame(draw)
   }
-
-  // 更新数据
-  function animation () {
-    draw()
-    window.requestAnimationFrame(animation)
-  }
-
-  bgImg1.onload = function () {
-    animation()
-  }
+  draw()
 }
 
 // 设置画布尺寸
