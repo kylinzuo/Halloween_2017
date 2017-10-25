@@ -181,6 +181,8 @@ export const typeDict = {
 
 export const config = {
   backgrounds: ['halloween-bg1', 'halloween-bg2'],
+  width: 70,
+  height: 61,
   distance: 200,
   speed: [3, 4, 5, 6],
   difficulty: 1,
@@ -194,4 +196,53 @@ export const config = {
   bottom: 130,
   progressBarL: 200,
   dropTimes: [49, 59, 73, 98]
+}
+
+// 产生捣蛋鬼时间与数量
+export function troublemaker (difficulty, gapTime) {
+  let diff = difficulty || config.difficulty
+  let gap = gapTime || 3
+  let interval = []
+  let duration = config.duration / 1000
+  for (let i = 2; i <= duration; i++) {
+    if ((i % gap) === 0) {
+      interval = [...interval, i]
+    }
+  }
+  let intervals = []
+  interval.reduce((prev, next) => {
+    intervals = [...intervals, {
+      time: getRandom(prev + 1, next) * 1000,
+      num: 2 + diff
+    }]
+    return next
+  })
+  return intervals
+}
+
+// 计算蝙蝠旋转角度
+export function rotateDeg (troble) {
+  let rotate = 0
+  if (troble.category.direction === 'left') {
+    if (troble.category.en === 'bat') {
+      rotate = troble.direction === 'up'
+        ? 135
+        : 45
+    } else {
+      rotate = troble.direction === 'up'
+        ? 25
+        : -10
+    }
+  } else {
+    if (troble.category.en === 'bat') {
+      rotate = troble.direction === 'up'
+        ? -135
+        : -45
+    } else {
+      rotate = troble.direction === 'up'
+        ? -25
+        : 10
+    }
+  }
+  return rotate
 }

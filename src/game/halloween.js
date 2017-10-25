@@ -5,11 +5,52 @@ import {
   ImagePreloader,
   getRandom,
   weightRules,
-  config
+  config,
+  troublemaker,
+  rotateDeg
 } from './utils'
 let imagesLists = [{
   name: 'halloween-bg1',
-  url: require('../assets/img/game/halloween-bg1.png')
+  url: require('../assets/img/game/halloween-bg1.jpg')
+}, {
+  name: 'halloween-bg2',
+  url: require('../assets/img/game/halloween-bg2.jpg')
+}, {
+  name: 'pumpkin0g',
+  url: require('../assets/img/game/pumpkin0g.png')
+}, {
+  name: 'pumpkin1g',
+  url: require('../assets/img/game/pumpkin1g.png')
+}, {
+  name: 'pumpkin3g',
+  url: require('../assets/img/game/pumpkin3g.png')
+}, {
+  name: 'pumpkin5g',
+  url: require('../assets/img/game/pumpkin5g.png')
+}, {
+  name: 'pumpkin10g',
+  url: require('../assets/img/game/pumpkin10g.png')
+}, {
+  name: 'witch_tl',
+  url: require('../assets/img/game/witch_tl.png')
+}, {
+  name: 'witch_tr',
+  url: require('../assets/img/game/witch_tr.png')
+}, {
+  name: 'bat',
+  url: require('../assets/img/game/bat.png')
+}, {
+  name: 'ghost_tl',
+  url: require('../assets/img/game/ghost_tl.png')
+}, {
+  name: 'ghost_tr',
+  url: require('../assets/img/game/ghost_tr.png')
+}, {
+  name: 'ghostl_tl',
+  url: require('../assets/img/game/ghostl_tl.png')
+}, {
+  name: 'ghostl_tr',
+  url: require('../assets/img/game/ghostl_tr.png')
 }]
 console.log(config)
 export default function Halloween (El, config) {
@@ -31,10 +72,14 @@ Halloween.prototype.init = function () {
   /**
    * 初始化数据
    */
+  this.duration = config.duration
   let ruleList = weightRules[getRandom(0, weightRules.length - 1)]
-  let level = getRandom(0, 3)
+  this.level = getRandom(0, 3)
   console.log('ruleList', ruleList)
-  this.pumpkins = initWeight(ruleList, level)
+  this.weightGroups = initWeight(ruleList, this.level)
+  let firstGroup = this.weightGroups.splice(0, 1)[0]
+  this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
+  console.log('firstGroup', firstGroup, this.pumpkins)
   /**
    * 批量加载需要加载的图片
    */
@@ -43,19 +88,136 @@ Halloween.prototype.init = function () {
   function imagesLoaded (images, imagesDict, loadedNum) {
     console.log('%c 图片加载完成', 'color:red', imagesDict)
     _this.imagesDict = imagesDict
-    _this.ctx.clearRect(0, 0, _this.size.width, _this.size.height)
-    _this.ctx.drawImage(_this.imagesDict['halloween-bg1'], 0, 0, _this.size.width, _this.size.height)
+    _this.render()
+    // todo => 测试启动程序
+    _this.gameStart()
   }
 }
 
 Halloween.prototype.gameStart = function () {
-  // 绘制图形
-  function draw () {
-    this.ctx.clearRect(0, 0, this.size.width, this.size.height)
-    // this.ctx.drawImage(bgImg1, 0, 0, this.size.width, this.size.height)
-    window.requestAnimationFrame(draw)
+  clearInterval(this.timer)
+  this.status = true
+  let timeStamp = (new Date()).getTime()
+  let intervalTime = 20
+  let speed = config.speed[this.level]
+  let gapTime = config.gapTime[this.level]
+  console.log('speed', speed, gapTime)
+  this.gapT = gapTime
+  this.produceTroubleTimes = troublemaker(this.level)
+  this.produceTroubleTime = this.produceTroubleTimes.shift()
+  console.log('======>>>>', this.produceTroubleTimes, this.produceTroubleTime)
+  // 更新数据
+  this.update = function () {
+    let index = this.pumpkins.length
+    while (index > 0 && index--) {
+      let curPumpkin = this.pumpkins[index]
+      if (curPumpkin.status && curPumpkin.category.type === config.pumpkin) {
+        curPumpkin.top += curPumpkin.speed
+        if (curPumpkin.top > (this.height - config.bottom)) {
+          curPumpkin.status = false
+        }
+      } else if (curPumpkin.status && curPumpkin.category.type === config.troublemaker) {
+        curPumpkin.left += curPumpkin.speed
+        let top = curPumpkin.top + (curPumpkin.direction === 'up' ? -curPumpkin.speedV : curPumpkin.speedV)
+        if (top < config.top) {
+          curPumpkin.direction = 'down'
+        } else if (top > (this.size.height - config.bottom)) {
+          curPumpkin.direction = 'up'
+        }
+        curPumpkin.rotate = rotateDeg(curPumpkin)
+        curPumpkin.top = top
+        if ((curPumpkin.category.direction === 'left' && curPumpkin.left < -50) || (curPumpkin.category.direction === 'right' && curPumpkin.left > this.size.width)) {
+          curPumpkin.status = false
+        }
+      }
+    }
   }
-  draw()
+  this.timer = setInterval(_ => {
+    this.duration -= intervalTime
+    this.gapT -= intervalTime
+    // 是否添加捣蛋鬼
+    let condition = (config.duration - this.duration) === this.produceTroubleTime.time
+    if (condition) {
+      let newTrobles = []
+      for (let i = 0; i < this.produceTroubleTime.num; i++) {
+        let category = {...config.troublemakers[getRandom(0, 7)]}
+        // 捣蛋元素x轴位置
+        let leftLoc = [getRandom(-200, -75), (this.size.width + getRandom(0, 200))]
+        let left = leftLoc[['right', 'left'].indexOf(category.direction)]
+        let speed = [-1, 1][['left', 'right'].indexOf(category.direction)] * getRandom(1, 3)
+        let direction = getRandom(0, 1) === 0 ? 'up' : 'down'
+        let troble = {
+          status: true,
+          category: category,
+          left: left,
+          top: getRandom(config.top, this.size.height - config.bottom),
+          rotate: 0,
+          speed: speed,
+          speedV: getRandom(1, 2),
+          direction: direction
+        }
+        troble.rotate = rotateDeg(troble)
+        newTrobles = [...newTrobles, troble]
+      }
+      this.pumpkins.push(...newTrobles)
+      if (this.produceTroubleTimes.length > 0) {
+        this.produceTroubleTime = this.produceTroubleTimes.shift()
+      }
+    }
+    // 添加南瓜
+    if (this.gapT <= 0 && this.duration > 1000) {
+      let newGroup = this.weightGroups.length > 0
+        ? this.weightGroups.splice(0, 1)[0]
+        : []
+      console.log('newGroup', newGroup)
+      let dropNum = getRandom(0, 4 - newGroup.length)
+      for (var i = 0; i < dropNum; i++) {
+        newGroup.push(0)
+      }
+      let newPumpkins = this.addNewPumpkins(newGroup, speed)
+      this.pumpkins.push(...newPumpkins)
+      this.gapT = gapTime
+    }
+    this.update()
+    let gameTime = (new Date()).getTime() - timeStamp
+    if (this.duration <= 0 || gameTime > config.duration) {
+      this.status = false
+      clearInterval(this.timer)
+    }
+  }, intervalTime)
+  // 渲染图形
+  this.render()
+}
+
+Halloween.prototype.render = function () {
+  // 渲染图形
+  this.ctx.clearRect(0, 0, this.size.width, this.size.height)
+  this.ctx.drawImage(this.imagesDict['halloween-bg1'], 0, 0, this.size.width, this.size.height)
+  let pumpkins = this.pumpkins
+  for (let i = 0; i < pumpkins.length; i++) {
+    this.ctx.drawImage(this.imagesDict[pumpkins[i].category.en], 20, 10, 160, 140, pumpkins[i].left, pumpkins[i].top, config.width, config.height)
+  }
+  if (this.status) {
+    window.requestAnimationFrame(this.render.bind(this))
+  }
+}
+
+// 添加新南瓜到队列中
+Halloween.prototype.addNewPumpkins = function (newPumpkinWeight, speed, isFirst) {
+  let newPumpkins = []
+  for (let i = 0; i < newPumpkinWeight.length; i++) {
+    let weight = newPumpkinWeight[i]
+    newPumpkins = [...newPumpkins, {
+      status: true,
+      category: {...config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)]},
+      left: !isFirst ? getRandom(0, (this.size.width - 50)) : getRandom(50, (this.size.width - 50)),
+      top: !isFirst ? getRandom(config.top - 100, config.top - 50) : getRandom(config.top + 100, config.top + 150),
+      rotate: getRandom(-45, 45),
+      speed: getRandom(speed - 1, speed),
+      weight: weight
+    }]
+  }
+  return newPumpkins
 }
 
 // 设置画布尺寸
@@ -131,9 +293,9 @@ function initWeight (ruleList, level) {
     return 0.5 - Math.random()
   })
   let tempCount = 0
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < Math.ceil(pumpkinWeights.length / initWeightArr.length); i++) {
     if (tempCount < pumpkinWeights.length) {
-      for (let j = 0; j >= 0 && tempCount < pumpkinWeights.length; j--) {
+      for (let j = 0; j < initWeightArr.length && tempCount < pumpkinWeights.length; j++) {
         if (i === 0 && initWeightArr[j].length === 0) {
           initWeightArr[j].push(pumpkinWeights[tempCount])
         } else if (i === 1 && initWeightArr[j].length <= 1) {
@@ -149,13 +311,13 @@ function initWeight (ruleList, level) {
       break
     }
   }
-  let aa = 0
-  initWeightArr.forEach(d => {
-    d.forEach(b => {
-      aa += b
-    })
-  })
-  console.log('%c 总重量为：', 'color:red', aa)
-  console.log('initWeightArr', initWeightArr)
+  // let aa = 0
+  // initWeightArr.forEach(d => {
+  //   d.forEach(b => {
+  //     aa += b
+  //   })
+  // })
+  // console.log('%c 总重量为：', 'color:red', aa)
+  // console.log('initWeightArr', initWeightArr)
   return initWeightArr
 }
