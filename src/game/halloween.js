@@ -89,8 +89,9 @@ Halloween.prototype.init = function () {
   this.weightGroups = initWeight(ruleList, this.level)
   let firstGroup = this.weightGroups.splice(0, 1)[0]
   this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
+  this.pumkinNum = this.pumpkins.length
   // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
-  console.log('firstGroup', firstGroup, this.pumpkins)
+  console.log('firstGroup', firstGroup, this.pumpkins, this.pumkinNum)
   /**
    * 批量加载需要加载的图片
    */
@@ -186,7 +187,9 @@ Halloween.prototype.gameStart = function () {
         newGroup.push(0)
       }
       let newPumpkins = this.addNewPumpkins(newGroup, speed)
-      this.pumpkins.push(...newPumpkins)
+      // this.pumpkins.push(...newPumpkins)
+      this.pumpkins.splice(this.pumkinNum, 0, ...newPumpkins)
+      this.pumkinNum = dropNum
       this.gapT = gapTime
     }
     this.update()
@@ -207,7 +210,11 @@ Halloween.prototype.render = function () {
   let pumpkins = this.pumpkins
   for (let i = 0; i < pumpkins.length; i++) {
     let pumpkin = pumpkins[i]
-    this.ctx.drawImage(this.imagesDict[pumpkin.category.en], pumpkin.category.sx, pumpkin.category.sy, pumpkin.category.sw, pumpkin.category.sh, pumpkin.left, pumpkin.top, pumpkin.category.dw, pumpkin.category.dh)
+    this.ctx.save()
+    this.ctx.translate(pumpkin.left + pumpkin.category.dw / 2, pumpkin.top + pumpkin.category.dh / 2)
+    this.ctx.rotate((Math.PI * 2 / 360) * pumpkin.rotate)
+    this.ctx.drawImage(this.imagesDict[pumpkin.category.en], pumpkin.category.sx, pumpkin.category.sy, pumpkin.category.sw, pumpkin.category.sh, -pumpkin.category.dw / 2, -pumpkin.category.dh / 2, pumpkin.category.dw, pumpkin.category.dh)
+    this.ctx.restore()
   }
   if (this.status) {
     window.requestAnimationFrame(this.render.bind(this))

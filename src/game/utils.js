@@ -156,8 +156,8 @@ export const typeDict = {
     sy: 10,
     sw: 200,
     sh: 140,
-    dw: 100,
-    dh: 70
+    dw: 80,
+    dh: 56
   },
   witch_tl: {
     direction: 'left',
