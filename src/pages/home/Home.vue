@@ -3,7 +3,7 @@
     <canvas ref="game"></canvas>
     <div class="btns">
       <button class="init" @click="init()">初始化</button>
-      <button class="start" @click="start()">开始</button>
+      <!-- <button class="start" @click="start()">开始</button> -->
     </div>
   </div>
 </template>
@@ -20,7 +20,7 @@ export default {
   },
   mounted () {
     let canvas = this.$refs.game
-    this.game = new Halloween(canvas)
+    this.game = new Halloween(canvas, this.callback.bind(this))
   },
   methods: {
     init () {
@@ -28,6 +28,12 @@ export default {
     },
     start () {
       this.game.gameStart()
+    },
+    callback (data) {
+      // console.log('%c ====', 'color: red', data)
+      if (data.type === 'gameOver') {
+        alert('南瓜重量：' + data.payload.weight + 'g')
+      }
     }
   }
 }

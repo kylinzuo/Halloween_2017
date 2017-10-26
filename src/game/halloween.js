@@ -8,7 +8,8 @@ import {
   config,
   troublemaker,
   rotateDeg,
-  captureTouch
+  captureTouch,
+  typeDict
 } from './utils'
 let imagesLists = [{
   name: 'halloween-bg1',
@@ -31,6 +32,21 @@ let imagesLists = [{
 }, {
   name: 'pumpkin10g',
   url: require('../assets/img/game/pumpkin10g.png')
+}, {
+  name: 'weight0g',
+  url: require('../assets/img/game/weight0g.png')
+}, {
+  name: 'weight1g',
+  url: require('../assets/img/game/weight1g.png')
+}, {
+  name: 'weight3g',
+  url: require('../assets/img/game/weight3g.png')
+}, {
+  name: 'weight5g',
+  url: require('../assets/img/game/weight5g.png')
+}, {
+  name: 'weight10g',
+  url: require('../assets/img/game/weight10g.png')
 }, {
   name: 'witch_tl',
   url: require('../assets/img/game/witch_tl.png')
@@ -56,9 +72,8 @@ let imagesLists = [{
   name: 'oops',
   url: require('../assets/img/game/oops.png')
 }]
-console.log(config)
+
 export default function Halloween (El, callback) {
-  console.log('开始生成实例')
   // 获取画布上下文
   this.ctx = El.getContext('2d')
   this.callback = callback
@@ -73,7 +88,6 @@ export default function Halloween (El, callback) {
   const ratio = devicePixelRatio / backingStoreRatio
   // 设置画布尺寸
   this.size = setCanvasSize(El, ratio)
-  console.log('%c size', 'color: red', this.size)
   this.ctx.scale(ratio, ratio)
   // 检测浏览器是否支持canvas
   if (!this.ctx) {
@@ -82,7 +96,8 @@ export default function Halloween (El, callback) {
   }
   // 添加触摸事件
   captureTouch(El, this.gainPumpkin.bind(this))
-  // this.init()
+  // todo => 测试初始化程序
+  this.init()
 }
 
 Halloween.prototype.init = function () {
@@ -101,25 +116,25 @@ Halloween.prototype.init = function () {
   this.duration = config.duration
   let ruleList = weightRules[getRandom(0, weightRules.length - 1)]
   this.level = getRandom(0, 3)
-  console.log('ruleList', ruleList)
+  // console.log('ruleList', ruleList)
   this.weightGroups = initWeight(ruleList, this.level)
   let firstGroup = this.weightGroups.splice(0, 1)[0]
   this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
+  // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
   this.pumkinNum = this.pumpkins.length
   this.scores = []
-  // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
-  console.log('firstGroup', firstGroup, this.pumpkins, this.pumkinNum)
+  clearInterval(this.timer)
   /**
    * 批量加载需要加载的图片
    */
   this.preloaderImages = new ImagePreloader(imagesLists, imagesLoaded)
   let _this = this
   function imagesLoaded (images, imagesDict, loadedNum) {
-    console.log('%c 图片加载完成', 'color:red', imagesDict)
+    // console.log('%c 图片加载完成', 'color:red', imagesDict)
     _this.imagesDict = imagesDict
     _this.render()
     // todo => 测试启动程序
-    // _this.gameStart()
+    _this.gameStart()
   }
 }
 
@@ -132,7 +147,7 @@ Halloween.prototype.gameStart = function () {
   let intervalTime = 20
   let speed = config.speed[this.level]
   let gapTime = config.gapTime[this.level]
-  console.log('speed', speed, gapTime)
+  // console.log('speed', speed, gapTime)
   this.gapT = gapTime
   this.produceTroubleTimes = troublemaker(this.level)
   this.produceTroubleTime = this.produceTroubleTimes.shift()
@@ -159,6 +174,16 @@ Halloween.prototype.gameStart = function () {
         if ((curPumpkin.category.direction === 'left' && curPumpkin.left < -100) || (curPumpkin.category.direction === 'right' && curPumpkin.left > this.size.width)) {
           curPumpkin.status = false
         }
+      }
+    }
+    // 更新分数透明度
+    let scores = this.scores
+    for (let i = 0; i < scores.length; i++) {
+      let score = scores[i]
+      if (score.category.opacity > 0) {
+        score.category.opacity -= 0.04
+      } else {
+        score.category.opacity = 0
       }
     }
   }
@@ -237,6 +262,16 @@ Halloween.prototype.render = function () {
     this.ctx.drawImage(this.imagesDict[pumpkin.category.en], pumpkin.category.sx, pumpkin.category.sy, pumpkin.category.sw, pumpkin.category.sh, -pumpkin.category.dw / 2, -pumpkin.category.dh / 2, pumpkin.category.dw, pumpkin.category.dh)
     this.ctx.restore()
   }
+  let scores = this.scores
+  for (let n = 0; n < scores.length; n++) {
+    let score = scores[n]
+    if (score.category.opacity > 0) {
+      this.ctx.save()
+      this.ctx.globalAlpha = score.category.opacity
+      this.ctx.drawImage(this.imagesDict[score.category.en], score.category.sx, score.category.sy, score.category.sw, score.category.sh, score.left, score.top, score.category.dw, score.category.dh)
+      this.ctx.restore()
+    }
+  }
   // 是否显示碰到捣蛋鬼提示
   if (!this.status && this.oops.left !== 10000) {
     this.ctx.drawImage(this.imagesDict['oops'], 0, 0, 188, 100, this.oops.left, this.oops.top, 150, 80)
@@ -254,7 +289,7 @@ Halloween.prototype.addNewPumpkins = function (newPumpkinWeight, speed, isFirst)
     newPumpkins = [...newPumpkins, {
       status: true,
       category: {...config.pumpkins[[0, 1, 3, 5, 10].indexOf(weight)]},
-      left: !isFirst ? getRandom(0, (this.size.width - 50)) : getRandom(50, (this.size.width - 50)),
+      left: !isFirst ? getRandom(0, (this.size.width - 70)) : getRandom(50, (this.size.width - 70)),
       top: !isFirst ? getRandom(config.top - 100, config.top - 50) : getRandom(config.top + 100, config.top + 150),
       rotate: getRandom(-45, 45),
       speed: getRandom(speed - 1, speed),
@@ -277,10 +312,9 @@ Halloween.prototype.gainPumpkin = function (touch) {
       y > target.top &&
       y < target.top + target.category.dh
     if (condition) {
-      console.log('点中了目标！')
       if (target.category.type === config.pumpkin) {
         this.weight += target.weight
-        target.category.en = target.category.score
+        target.category = {...typeDict[target.category.score]}
         // 新获得的重量上传
         this.callback && this.callback({
           type: 'updateWeight',
@@ -289,6 +323,7 @@ Halloween.prototype.gainPumpkin = function (touch) {
         // 添加用户点击统计数据
         this.counts[[0, 1, 3, 5, 10].indexOf(target.weight)] += 1
         this.scores = pumpkins.splice(i, 1)
+        // console.log('scores', this.scores)
       } else {
         this.status = false
         clearInterval(this.timer)
