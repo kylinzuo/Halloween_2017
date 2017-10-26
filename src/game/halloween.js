@@ -123,7 +123,6 @@ Halloween.prototype.init = function (lists, level) {
   let firstGroup = this.weightGroups.splice(0, 1)[0]
   this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
   // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
-  this.pumkinNum = this.pumpkins.length
   this.scores = []
   this.bgImage = this.firstBg < 2 ? 'halloween-bg1' : config.backgrounds[getRandom(0, 1)]
   clearInterval(this.timer)
@@ -161,7 +160,7 @@ Halloween.prototype.gameStart = function () {
       let curPumpkin = this.pumpkins[index]
       if (curPumpkin.status && curPumpkin.category.type === config.pumpkin) {
         curPumpkin.top += curPumpkin.speed
-        if (curPumpkin.top > (this.height - config.bottom)) {
+        if (curPumpkin.top > (this.size.height - config.bottom)) {
           curPumpkin.status = false
         }
       } else if (curPumpkin.status && curPumpkin.category.type === config.troublemaker) {
@@ -234,8 +233,7 @@ Halloween.prototype.gameStart = function () {
       }
       let newPumpkins = this.addNewPumpkins(newGroup, speed)
       // this.pumpkins.push(...newPumpkins)
-      this.pumpkins.splice(this.pumkinNum, 0, ...newPumpkins)
-      this.pumkinNum = dropNum
+      this.pumpkins.splice(0, 0, ...newPumpkins)
       this.gapT = gapTime
     }
     this.update()
@@ -258,7 +256,7 @@ Halloween.prototype.render = function () {
   let pumpkins = this.pumpkins
   for (let i = 0; i < pumpkins.length; i++) {
     let pumpkin = pumpkins[i]
-    if (pumpkin.top > (this.size.height - config.bottom)) continue
+    if (!pumpkin.status) continue
     this.ctx.save()
     this.ctx.translate(pumpkin.left + pumpkin.category.dw / 2, pumpkin.top + pumpkin.category.dh / 2)
     this.ctx.rotate((Math.PI * 2 / 360) * pumpkin.rotate)
