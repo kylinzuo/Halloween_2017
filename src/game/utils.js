@@ -99,83 +99,161 @@ export const typeDict = {
     en: 'pumpkin0g',
     cn: '0g南瓜',
     score: 'pumpkin0g-score',
-    weight: 0
+    weight: 0,
+    sx: 20,
+    sy: 10,
+    sw: 160,
+    sh: 140,
+    dw: 70,
+    dh: 61
   },
   pumpkin1g: {
     type: 'pumpkin',
     en: 'pumpkin1g',
     cn: '1g南瓜',
     score: 'pumpkin1g-score',
-    weight: 1
+    weight: 1,
+    sx: 20,
+    sy: 10,
+    sw: 160,
+    sh: 140,
+    dw: 70,
+    dh: 61
   },
   pumpkin3g: {
     type: 'pumpkin',
     en: 'pumpkin3g',
     score: 'pumpkin3g-score',
     cn: '3g南瓜',
-    weight: 3
+    weight: 3,
+    sx: 20,
+    sy: 10,
+    sw: 160,
+    sh: 140,
+    dw: 70,
+    dh: 61
   },
   pumpkin5g: {
     type: 'pumpkin',
     en: 'pumpkin5g',
     cn: '5g南瓜',
     score: 'pumpkin5g-score',
-    weight: 5
+    weight: 5,
+    sx: 20,
+    sy: 10,
+    sw: 160,
+    sh: 140,
+    dw: 70,
+    dh: 61
   },
   pumpkin10g: {
     type: 'pumpkin',
     en: 'pumpkin10g',
     cn: '10g南瓜',
     score: 'pumpkin10g-score',
-    weight: 10
+    weight: 10,
+    sx: 0,
+    sy: 10,
+    sw: 200,
+    sh: 140,
+    dw: 100,
+    dh: 70
   },
   witch_tl: {
     direction: 'left',
     type: 'troublemaker',
     en: 'witch_tl',
-    cn: '女巫'
+    cn: '女巫',
+    sx: 0,
+    sy: 0,
+    sw: 210,
+    sh: 186,
+    dw: 70,
+    dh: 62
   },
   witch_tr: {
     direction: 'right',
     type: 'troublemaker',
     en: 'witch_tr',
-    cn: '女巫'
+    cn: '女巫',
+    sx: 0,
+    sy: 0,
+    sw: 210,
+    sh: 186,
+    dw: 70,
+    dh: 62
   },
   bat_tl: {
     direction: 'left',
     type: 'troublemaker',
     en: 'bat',
-    cn: '蝙蝠'
+    cn: '蝙蝠',
+    sx: 0,
+    sy: 0,
+    sw: 188,
+    sh: 66,
+    dw: 90,
+    dh: 32
   },
   bat_tr: {
     direction: 'right',
     type: 'troublemaker',
     en: 'bat',
-    cn: '蝙蝠'
+    cn: '蝙蝠',
+    sx: 0,
+    sy: 0,
+    sw: 188,
+    sh: 66,
+    dw: 90,
+    dh: 32
   },
   ghost_tl: {
     direction: 'left',
     type: 'troublemaker',
     en: 'ghost_tl',
-    cn: '幽灵'
+    cn: '幽灵',
+    sx: 0,
+    sy: 0,
+    sw: 128,
+    sh: 108,
+    dw: 70,
+    dh: 59
   },
   ghost_tr: {
     direction: 'right',
     type: 'troublemaker',
     en: 'ghost_tr',
-    cn: '幽灵'
+    cn: '幽灵',
+    sx: 0,
+    sy: 0,
+    sw: 128,
+    sh: 108,
+    dw: 70,
+    dh: 59
   },
   ghostl_tl: {
     direction: 'left',
     type: 'troublemaker',
     en: 'ghostl_tl',
-    cn: '幽灵'
+    cn: '幽灵',
+    sx: 0,
+    sy: 0,
+    sw: 84,
+    sh: 88,
+    dw: 50,
+    dh: 52
   },
   ghostl_tr: {
     direction: 'right',
     type: 'troublemaker',
     en: 'ghostl_tr',
-    cn: '幽灵'
+    cn: '幽灵',
+    sx: 0,
+    sy: 0,
+    sw: 84,
+    sh: 88,
+    dw: 50,
+    dh: 52
   }
 }
 

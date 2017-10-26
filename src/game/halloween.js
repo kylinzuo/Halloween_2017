@@ -55,11 +55,21 @@ let imagesLists = [{
 console.log(config)
 export default function Halloween (El, config) {
   console.log('开始生成实例')
-  // 设置画布尺寸
-  this.size = setCanvasSize(El)
-  console.log('%c size', 'color: red', this.size)
   // 获取画布上下文
   this.ctx = El.getContext('2d')
+  // 屏幕的设备像素比
+  const devicePixelRatio = window.devicePixelRatio || 1
+  // 浏览器在渲染canvas之前存储画布信息的像素比
+  const backingStoreRatio = this.ctx.webkitBackingStorePixelRatio ||
+  this.ctx.mozBackingStorePixelRatio ||
+  this.ctx.msBackingStorePixelRatio ||
+  this.ctx.oBackingStorePixelRatio ||
+  this.ctx.backingStorePixelRatio || 1
+  const ratio = devicePixelRatio / backingStoreRatio
+  // 设置画布尺寸
+  this.size = setCanvasSize(El, ratio)
+  console.log('%c size', 'color: red', this.size)
+  this.ctx.scale(ratio, ratio)
   // 检测浏览器是否支持canvas
   if (!this.ctx) {
     alert('浏览器版本太低！')
@@ -79,6 +89,7 @@ Halloween.prototype.init = function () {
   this.weightGroups = initWeight(ruleList, this.level)
   let firstGroup = this.weightGroups.splice(0, 1)[0]
   this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
+  // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
   console.log('firstGroup', firstGroup, this.pumpkins)
   /**
    * 批量加载需要加载的图片
@@ -126,7 +137,7 @@ Halloween.prototype.gameStart = function () {
         }
         curPumpkin.rotate = rotateDeg(curPumpkin)
         curPumpkin.top = top
-        if ((curPumpkin.category.direction === 'left' && curPumpkin.left < -50) || (curPumpkin.category.direction === 'right' && curPumpkin.left > this.size.width)) {
+        if ((curPumpkin.category.direction === 'left' && curPumpkin.left < -100) || (curPumpkin.category.direction === 'right' && curPumpkin.left > this.size.width)) {
           curPumpkin.status = false
         }
       }
@@ -169,7 +180,7 @@ Halloween.prototype.gameStart = function () {
       let newGroup = this.weightGroups.length > 0
         ? this.weightGroups.splice(0, 1)[0]
         : []
-      console.log('newGroup', newGroup)
+      // console.log('newGroup', newGroup)
       let dropNum = getRandom(0, 4 - newGroup.length)
       for (var i = 0; i < dropNum; i++) {
         newGroup.push(0)
@@ -195,7 +206,8 @@ Halloween.prototype.render = function () {
   this.ctx.drawImage(this.imagesDict['halloween-bg1'], 0, 0, this.size.width, this.size.height)
   let pumpkins = this.pumpkins
   for (let i = 0; i < pumpkins.length; i++) {
-    this.ctx.drawImage(this.imagesDict[pumpkins[i].category.en], 20, 10, 160, 140, pumpkins[i].left, pumpkins[i].top, config.width, config.height)
+    let pumpkin = pumpkins[i]
+    this.ctx.drawImage(this.imagesDict[pumpkin.category.en], pumpkin.category.sx, pumpkin.category.sy, pumpkin.category.sw, pumpkin.category.sh, pumpkin.left, pumpkin.top, pumpkin.category.dw, pumpkin.category.dh)
   }
   if (this.status) {
     window.requestAnimationFrame(this.render.bind(this))
@@ -221,7 +233,7 @@ Halloween.prototype.addNewPumpkins = function (newPumpkinWeight, speed, isFirst)
 }
 
 // 设置画布尺寸
-function setCanvasSize (domEl) {
+function setCanvasSize (domEl, ratio) {
   let parentNode = domEl.parentNode
   let w = parentNode.clientWidth
   let h = parentNode.clientHeight
@@ -233,7 +245,8 @@ function setCanvasSize (domEl) {
     val: h
   }]
   props.forEach(d => {
-    domEl.setAttribute(d.prop, d.val)
+    domEl[d.prop] = d.val * ratio
+    domEl.style[d.prop] = d.val + 'px'
   })
   return {
     width: w,
