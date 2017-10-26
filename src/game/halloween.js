@@ -89,6 +89,7 @@ export default function Halloween (El, callback) {
   // 设置画布尺寸
   this.size = setCanvasSize(El, ratio)
   this.ctx.scale(ratio, ratio)
+  this.firstBg = -1
   // 检测浏览器是否支持canvas
   if (!this.ctx) {
     alert('浏览器版本太低！')
@@ -100,10 +101,11 @@ export default function Halloween (El, callback) {
   this.init()
 }
 
-Halloween.prototype.init = function () {
+Halloween.prototype.init = function (lists, level) {
   /**
    * 初始化数据
    */
+  this.firstBg++
   this.inited = true
   this.status = false
   this.weight = 0
@@ -114,15 +116,16 @@ Halloween.prototype.init = function () {
   }
   this.endStatus = 0
   this.duration = config.duration
-  let ruleList = weightRules[getRandom(0, weightRules.length - 1)]
-  this.level = getRandom(0, 3)
-  // console.log('ruleList', ruleList)
+  let ruleList = lists instanceof Array && lists.length <= 4 ? [...lists] : weightRules[getRandom(0, weightRules.length - 1)]
+  this.level = level >= 0 && level <= 3 ? level : getRandom(0, 3)
+  // console.log('ruleList', ruleList, this.level)
   this.weightGroups = initWeight(ruleList, this.level)
   let firstGroup = this.weightGroups.splice(0, 1)[0]
   this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
   // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
   this.pumkinNum = this.pumpkins.length
   this.scores = []
+  this.bgImage = this.firstBg < 2 ? 'halloween-bg1' : config.backgrounds[getRandom(0, 1)]
   clearInterval(this.timer)
   /**
    * 批量加载需要加载的图片
@@ -251,7 +254,7 @@ Halloween.prototype.gameStart = function () {
 Halloween.prototype.render = function () {
   // 渲染图形
   this.ctx.clearRect(0, 0, this.size.width, this.size.height)
-  this.ctx.drawImage(this.imagesDict['halloween-bg1'], 0, 0, this.size.width, this.size.height)
+  this.ctx.drawImage(this.imagesDict[this.bgImage], 0, 0, this.size.width, this.size.height)
   let pumpkins = this.pumpkins
   for (let i = 0; i < pumpkins.length; i++) {
     let pumpkin = pumpkins[i]
