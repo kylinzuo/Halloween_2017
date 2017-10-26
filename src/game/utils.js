@@ -324,3 +324,34 @@ export function rotateDeg (troble) {
   }
   return rotate
 }
+
+// 添加监听触摸事件
+export function captureTouch (element, cb) {
+  let touch = {
+    x: 0,
+    y: 0
+  }
+
+  // 绑定touchstart事件
+  element.addEventListener('touchstart', function (event) {
+    event.preventDefault()
+    let x
+    let y
+    let touchEvent = event.touches[0]
+    if (touchEvent.pageX || touchEvent.pageY) {
+      x = touchEvent.pageX
+      y = touchEvent.pageY
+    } else {
+      x = touchEvent.clientX
+      y = touchEvent.clientY
+    }
+    touch.x = x
+    touch.y = y
+    cb(touch)
+  }, false)
+
+  // 绑定touchmove事件
+  element.addEventListener('touchmove', function (event) {
+    event.preventDefault()
+  }, false)
+}

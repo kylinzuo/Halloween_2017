@@ -7,7 +7,8 @@ import {
   weightRules,
   config,
   troublemaker,
-  rotateDeg
+  rotateDeg,
+  captureTouch
 } from './utils'
 let imagesLists = [{
   name: 'halloween-bg1',
@@ -51,12 +52,16 @@ let imagesLists = [{
 }, {
   name: 'ghostl_tr',
   url: require('../assets/img/game/ghostl_tr.png')
+}, {
+  name: 'oops',
+  url: require('../assets/img/game/oops.png')
 }]
 console.log(config)
-export default function Halloween (El, config) {
+export default function Halloween (El, callback) {
   console.log('开始生成实例')
   // 获取画布上下文
   this.ctx = El.getContext('2d')
+  this.callback = callback
   // 屏幕的设备像素比
   const devicePixelRatio = window.devicePixelRatio || 1
   // 浏览器在渲染canvas之前存储画布信息的像素比
@@ -75,13 +80,24 @@ export default function Halloween (El, config) {
     alert('浏览器版本太低！')
     return null
   }
-  this.init()
+  // 添加触摸事件
+  captureTouch(El, this.gainPumpkin.bind(this))
+  // this.init()
 }
 
 Halloween.prototype.init = function () {
   /**
    * 初始化数据
    */
+  this.inited = true
+  this.status = false
+  this.weight = 0
+  this.counts = [0, 0, 0, 0, 0]
+  this.oops = {
+    left: -10000,
+    top: -10000
+  }
+  this.endStatus = 0
   this.duration = config.duration
   let ruleList = weightRules[getRandom(0, weightRules.length - 1)]
   this.level = getRandom(0, 3)
@@ -90,6 +106,7 @@ Halloween.prototype.init = function () {
   let firstGroup = this.weightGroups.splice(0, 1)[0]
   this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
   this.pumkinNum = this.pumpkins.length
+  this.scores = []
   // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
   console.log('firstGroup', firstGroup, this.pumpkins, this.pumkinNum)
   /**
@@ -102,11 +119,13 @@ Halloween.prototype.init = function () {
     _this.imagesDict = imagesDict
     _this.render()
     // todo => 测试启动程序
-    _this.gameStart()
+    // _this.gameStart()
   }
 }
 
 Halloween.prototype.gameStart = function () {
+  if (!this.inited) return
+  this.inited = false
   clearInterval(this.timer)
   this.status = true
   let timeStamp = (new Date()).getTime()
@@ -117,7 +136,6 @@ Halloween.prototype.gameStart = function () {
   this.gapT = gapTime
   this.produceTroubleTimes = troublemaker(this.level)
   this.produceTroubleTime = this.produceTroubleTimes.shift()
-  console.log('======>>>>', this.produceTroubleTimes, this.produceTroubleTime)
   // 更新数据
   this.update = function () {
     let index = this.pumpkins.length
@@ -196,6 +214,8 @@ Halloween.prototype.gameStart = function () {
     let gameTime = (new Date()).getTime() - timeStamp
     if (this.duration <= 0 || gameTime > config.duration) {
       this.status = false
+      this.endStatus = 0
+      this.gameOver()
       clearInterval(this.timer)
     }
   }, intervalTime)
@@ -210,11 +230,16 @@ Halloween.prototype.render = function () {
   let pumpkins = this.pumpkins
   for (let i = 0; i < pumpkins.length; i++) {
     let pumpkin = pumpkins[i]
+    if (pumpkin.top > (this.size.height - config.bottom)) continue
     this.ctx.save()
     this.ctx.translate(pumpkin.left + pumpkin.category.dw / 2, pumpkin.top + pumpkin.category.dh / 2)
     this.ctx.rotate((Math.PI * 2 / 360) * pumpkin.rotate)
     this.ctx.drawImage(this.imagesDict[pumpkin.category.en], pumpkin.category.sx, pumpkin.category.sy, pumpkin.category.sw, pumpkin.category.sh, -pumpkin.category.dw / 2, -pumpkin.category.dh / 2, pumpkin.category.dw, pumpkin.category.dh)
     this.ctx.restore()
+  }
+  // 是否显示碰到捣蛋鬼提示
+  if (!this.status && this.oops.left !== 10000) {
+    this.ctx.drawImage(this.imagesDict['oops'], 0, 0, 188, 100, this.oops.left, this.oops.top, 150, 80)
   }
   if (this.status) {
     window.requestAnimationFrame(this.render.bind(this))
@@ -237,6 +262,65 @@ Halloween.prototype.addNewPumpkins = function (newPumpkinWeight, speed, isFirst)
     }]
   }
   return newPumpkins
+}
+
+// 处理触摸事件
+Halloween.prototype.gainPumpkin = function (touch) {
+  if (!this.status) return
+  let x = touch.x
+  let y = touch.y
+  let pumpkins = this.pumpkins
+  for (let i = pumpkins.length - 1; i >= 0; i--) {
+    let target = pumpkins[i]
+    let condition = x > target.left &&
+      x < target.left + target.category.dw &&
+      y > target.top &&
+      y < target.top + target.category.dh
+    if (condition) {
+      console.log('点中了目标！')
+      if (target.category.type === config.pumpkin) {
+        this.weight += target.weight
+        target.category.en = target.category.score
+        // 新获得的重量上传
+        this.callback && this.callback({
+          type: 'updateWeight',
+          payload: target.weight
+        })
+        // 添加用户点击统计数据
+        this.counts[[0, 1, 3, 5, 10].indexOf(target.weight)] += 1
+        this.scores = pumpkins.splice(i, 1)
+      } else {
+        this.status = false
+        clearInterval(this.timer)
+        this.oops = {
+          left: target.left - 25,
+          top: target.top - 15
+        }
+        // 点击到了捣蛋鬼，游戏结束将结果反馈回父组件 p.category.cn
+        this.endStatus = ['', '女巫', '幽灵', '蝙蝠'].indexOf(target.category.cn)
+        this.gameOver()
+        this.pumpkins = this.pumpkins.filter(d => {
+          return d.category.type !== config.pumpkin
+        })
+      }
+      break
+    }
+  }
+}
+
+// 游戏结束结算
+Halloween.prototype.gameOver = function () {
+  this.duration = 0
+  // 反馈数据
+  let res = {
+    weight: this.weight,
+    counts: this.counts,
+    endStatus: this.endStatus
+  }
+  this.callback && this.callback({
+    type: 'gameOver',
+    payload: {...res}
+  })
 }
 
 // 设置画布尺寸
