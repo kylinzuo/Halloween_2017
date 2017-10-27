@@ -233,8 +233,8 @@ export const typeDict = {
     sy: 0,
     sw: 210,
     sh: 186,
-    dw: 70,
-    dh: 62
+    dw: 105,
+    dh: 93
   },
   witch_tr: {
     direction: 'right',
@@ -245,8 +245,8 @@ export const typeDict = {
     sy: 0,
     sw: 210,
     sh: 186,
-    dw: 70,
-    dh: 62
+    dw: 105,
+    dh: 93
   },
   bat_tl: {
     direction: 'left',
@@ -257,8 +257,8 @@ export const typeDict = {
     sy: 0,
     sw: 188,
     sh: 66,
-    dw: 90,
-    dh: 32
+    dw: 94,
+    dh: 33
   },
   bat_tr: {
     direction: 'right',
@@ -269,8 +269,8 @@ export const typeDict = {
     sy: 0,
     sw: 188,
     sh: 66,
-    dw: 90,
-    dh: 32
+    dw: 94,
+    dh: 33
   },
   ghost_tl: {
     direction: 'left',
@@ -281,8 +281,8 @@ export const typeDict = {
     sy: 0,
     sw: 128,
     sh: 108,
-    dw: 70,
-    dh: 59
+    dw: 64,
+    dh: 54
   },
   ghost_tr: {
     direction: 'right',
@@ -293,8 +293,8 @@ export const typeDict = {
     sy: 0,
     sw: 128,
     sh: 108,
-    dw: 70,
-    dh: 59
+    dw: 64,
+    dh: 54
   },
   ghostl_tl: {
     direction: 'left',
@@ -305,8 +305,8 @@ export const typeDict = {
     sy: 0,
     sw: 84,
     sh: 88,
-    dw: 50,
-    dh: 52
+    dw: 42,
+    dh: 44
   },
   ghostl_tr: {
     direction: 'right',
@@ -317,8 +317,8 @@ export const typeDict = {
     sy: 0,
     sw: 84,
     sh: 88,
-    dw: 50,
-    dh: 52
+    dw: 42,
+    dh: 44
   }
 }
 

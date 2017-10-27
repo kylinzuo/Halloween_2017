@@ -195,6 +195,7 @@ Halloween.prototype.gameStart = function () {
       let score = scores[i]
       if (score.category.opacity > 0) {
         score.category.opacity -= 0.04
+        score.top -= 1
       } else {
         score.category.opacity = 0
       }
@@ -280,7 +281,7 @@ Halloween.prototype.render = function () {
     if (score.category.opacity > 0) {
       this.ctx.save()
       this.ctx.globalAlpha = score.category.opacity
-      this.ctx.drawImage(this.imagesDict[score.category.en], score.category.sx, score.category.sy, score.category.sw, score.category.sh, score.left, score.top, score.category.dw, score.category.dh)
+      this.ctx.drawImage(this.imagesDict[score.category.en], score.category.sx, score.category.sy, score.category.sw, score.category.sh, score.left + 9, score.top + 15, score.category.dw, score.category.dh)
       this.ctx.restore()
     }
   }
