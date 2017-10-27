@@ -264,7 +264,7 @@ Halloween.prototype.gameStart = function () {
 Halloween.prototype.render = function () {
   // 渲染图形
   this.ctx.clearRect(0, 0, this.size.width, this.size.height)
-  this.ctx.drawImage(this.imagesDict[this.bgImage], -1, -1, this.size.width, this.size.height)
+  this.ctx.drawImage(this.imagesDict[this.bgImage], -1, -1, this.size.width + 2, this.size.height + 2)
   let pumpkins = this.pumpkins
   for (let i = 0; i < pumpkins.length; i++) {
     let pumpkin = pumpkins[i]
