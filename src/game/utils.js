@@ -169,8 +169,8 @@ export const typeDict = {
     sy: 0,
     sw: 104,
     sh: 60,
-    dw: 90,
-    dh: 52
+    dw: 52,
+    dh: 30
   },
   weight1g: {
     type: 'weight',
@@ -182,8 +182,8 @@ export const typeDict = {
     sy: 0,
     sw: 104,
     sh: 60,
-    dw: 90,
-    dh: 52
+    dw: 52,
+    dh: 30
   },
   weight3g: {
     type: 'weight',
@@ -195,8 +195,8 @@ export const typeDict = {
     sy: 0,
     sw: 104,
     sh: 60,
-    dw: 90,
-    dh: 52
+    dw: 52,
+    dh: 30
   },
   weight5g: {
     type: 'weight',
@@ -208,8 +208,8 @@ export const typeDict = {
     sy: 0,
     sw: 104,
     sh: 60,
-    dw: 90,
-    dh: 52
+    dw: 52,
+    dh: 30
   },
   weight10g: {
     type: 'weight',
@@ -221,8 +221,8 @@ export const typeDict = {
     sy: 0,
     sw: 104,
     sh: 60,
-    dw: 90,
-    dh: 52
+    dw: 52,
+    dh: 30
   },
   witch_tl: {
     direction: 'left',

@@ -97,6 +97,17 @@ export default function Halloween (El, callback) {
   }
   // 添加触摸事件
   captureTouch(El, this.gainPumpkin.bind(this))
+  // 兼容低版本浏览器不支持requestAnimationFrame
+  window.requestAnimFrame = (function () {
+    return window.requestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.oRequestAnimationFrame ||
+      window.msRequestAnimationFrame ||
+      function (callback) {
+        window.setTimeout(callback, 1000 / 60)
+      }
+  })()
   // todo => 测试初始化程序
   this.init()
 }
@@ -252,7 +263,7 @@ Halloween.prototype.gameStart = function () {
 Halloween.prototype.render = function () {
   // 渲染图形
   this.ctx.clearRect(0, 0, this.size.width, this.size.height)
-  this.ctx.drawImage(this.imagesDict[this.bgImage], 0, 0, this.size.width, this.size.height)
+  this.ctx.drawImage(this.imagesDict[this.bgImage], -1, -1, this.size.width, this.size.height)
   let pumpkins = this.pumpkins
   for (let i = 0; i < pumpkins.length; i++) {
     let pumpkin = pumpkins[i]
@@ -278,7 +289,7 @@ Halloween.prototype.render = function () {
     this.ctx.drawImage(this.imagesDict['oops'], 0, 0, 188, 100, this.oops.left, this.oops.top, 150, 80)
   }
   if (this.status) {
-    window.requestAnimationFrame(this.render.bind(this))
+    window.requestAnimFrame(this.render.bind(this))
   }
 }
 
