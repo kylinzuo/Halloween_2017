@@ -71,6 +71,9 @@ let imagesLists = [{
 }, {
   name: 'oops',
   url: require('../assets/img/game/oops.png')
+}, {
+  name: 'tips',
+  url: require('../assets/img/game/tips-btn.png')
 }]
 
 export default function Halloween (El, callback) {
@@ -110,6 +113,13 @@ export default function Halloween (El, callback) {
   })()
   // todo => 测试初始化程序
   this.init()
+  let _this = this
+  window.onresize = function () {
+    console.log('onresize')
+    _this.size = setCanvasSize(El, ratio)
+    _this.ctx.scale(ratio, ratio)
+    _this.render()
+  }
 }
 
 Halloween.prototype.init = function (lists, level) {
@@ -129,8 +139,9 @@ Halloween.prototype.init = function (lists, level) {
   this.duration = config.duration
   let ruleList = lists instanceof Array && lists.length <= 4 ? [...lists] : weightRules[getRandom(0, weightRules.length - 1)]
   this.level = level >= 0 && level <= 3 ? level : getRandom(0, 3)
-  // console.log('ruleList', ruleList, this.level)
+  console.log('ruleList', ruleList, this.level)
   this.weightGroups = initWeight(ruleList, this.level)
+  console.log('this.weightGroups', this.weightGroups)
   let firstGroup = this.weightGroups.splice(0, 1)[0]
   this.pumpkins = this.addNewPumpkins(firstGroup, config.speed[this.level], true)
   // this.pumpkins = this.addNewPumpkins([0], config.speed[this.level], true)
@@ -147,7 +158,7 @@ Halloween.prototype.init = function (lists, level) {
     _this.imagesDict = imagesDict
     _this.render()
     // todo => 测试启动程序
-    _this.gameStart()
+    // _this.gameStart()
   }
 }
 
@@ -262,6 +273,7 @@ Halloween.prototype.gameStart = function () {
 }
 
 Halloween.prototype.render = function () {
+  if (!this.imagesDict) return
   // 渲染图形
   this.ctx.clearRect(0, 0, this.size.width, this.size.height)
   this.ctx.drawImage(this.imagesDict[this.bgImage], -1, -1, this.size.width + 2, this.size.height + 2)
@@ -287,7 +299,11 @@ Halloween.prototype.render = function () {
   }
   // 是否显示碰到捣蛋鬼提示
   if (!this.status && this.oops.left !== 10000) {
-    this.ctx.drawImage(this.imagesDict['oops'], 0, 0, 188, 100, this.oops.left, this.oops.top, 150, 80)
+    this.ctx.drawImage(this.imagesDict['oops'], 0, 0, 188, 100, this.oops.left, this.oops.top, 94, 50)
+  }
+  // 是否显示点击南瓜提示
+  if (this.inited && !this.status) {
+    this.ctx.drawImage(this.imagesDict['tips'], 0, 0, 236, 104, this.size.width / 2 - 59, this.size.height / 2 - 26, 118, 52)
   }
   if (this.status) {
     window.requestAnimFrame(this.render.bind(this))
@@ -341,8 +357,8 @@ Halloween.prototype.gainPumpkin = function (touch) {
         this.status = false
         clearInterval(this.timer)
         this.oops = {
-          left: target.left - 25,
-          top: target.top - 15
+          left: target.left,
+          top: target.top
         }
         // 点击到了捣蛋鬼，游戏结束将结果反馈回父组件 p.category.cn
         this.endStatus = ['', '女巫', '幽灵', '蝙蝠'].indexOf(target.category.cn)
@@ -374,8 +390,8 @@ Halloween.prototype.gameOver = function () {
 // 设置画布尺寸
 function setCanvasSize (domEl, ratio) {
   let parentNode = domEl.parentNode
-  let w = parentNode.clientWidth
-  let h = parentNode.clientHeight
+  let w = Math.max(parentNode.clientWidth, document.body.clientWidth)
+  let h = Math.max(parentNode.clientHeight, document.body.clientHeight)
   let props = [{
     prop: 'width',
     val: w

@@ -3,13 +3,14 @@
     <canvas ref="game"></canvas>
     <div class="btns">
       <button class="init" @click="init()">初始化</button>
-      <!-- <button class="start" @click="start()">开始</button> -->
+      <button class="start" @click="start()">开始</button>
     </div>
   </div>
 </template>
 
 <script>
 import Halloween from '@/game/halloween'
+import { getRandom } from '@/game/utils'
 export default {
   name: 'home',
   data () {
@@ -24,7 +25,7 @@ export default {
   },
   methods: {
     init () {
-      this.game.init()
+      this.game.init([31, 3, 2, 15], getRandom(1, 2))
     },
     start () {
       this.game.gameStart()
